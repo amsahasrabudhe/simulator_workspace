@@ -1,7 +1,0 @@
-wheel base_m               : 2.8
-car_length_m               : 4.8
-car_width_m                : 2.1
-
-max_acceleration_mps       : 4.0
-max_velocity_mps           : 35.76
-max_steering_angle_degree  : 40.0

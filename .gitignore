@@ -3,3 +3,7 @@ devel/
 install/
 
 src/CMakeLists.txt.user
+
+src/simulator/.idea
+
+*.pyc

@@ -1,5 +1,5 @@
 <launch>
-    <node name="vehicle_description" pkg="vehicle_description" type="vehicle_description" output="screen">
-        <rosparam command="load" file="$(find vehicle_description)/launch/vehicle_description_params.yaml" />
+    <node name="simulator" pkg="simulator" type="run_simulation.py" output="screen">
+        <rosparam command="load" file="$(find simulator)/launch/simulator_params.yaml" />
     </node>
 </launch>
