@@ -7,6 +7,5 @@ if __name__ == "__main__":
     rospy.init_node("simulator")
 
     simulator = Simulator()
-    #simulator.run()
 
     rospy.spin()

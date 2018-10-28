@@ -21,11 +21,11 @@ class Simulator:
         self.screen.fill((255,255,255))
 
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        image_path = os.path.join(current_dir, "resources/car_small.png")
+        image_path = os.path.join(current_dir, "resources/autonomous_car_small.png")
 
         self.car_image = pygame.image.load(image_path)
 
-        self.car_posX = 1280
+        self.car_posX = 0
 
         rospy.Timer(rospy.Duration(0.02), self.updateDisplay)
 
@@ -33,7 +33,7 @@ class Simulator:
     def updateDisplay(self, event):
 
         self.screen.fill((255, 255, 255))
-        self.screen.blit( pygame.transform.rotate(self.car_image, 0), (self.car_posX,360) )
-        self.car_posX -= 5
+        self.screen.blit( pygame.transform.rotozoom(self.car_image, 0, 1), (self.car_posX,360) )
+        self.car_posX += 5
 
         pygame.display.update()
