@@ -5,86 +5,170 @@ import pygame
 import os
 import math
 import numpy as np
+import json
 
+# Define lane width (here height of image since road is represented horizontally)
 LANE_WIDTH = 60
 
-BLOCK_WIDTH = 8
-HALF_BLOCK_DIAG = 60.53/2
+# Define the distance between two lane points (number of pixels) written to the json file
+LANE_POINT_DIST_PIXELS = 30
 
+# Load image of block of road to create base image
 current_dir = os.path.dirname(os.path.abspath(__file__))
 image_path = os.path.join(current_dir, "resources/block.png")
 
 block_image = pygame.image.load(image_path)
 
-print "After you input the number of lanes, an empty window will open."
+# Basic instructions for the user
+print "\nAfter you input the number of lanes, an empty window will open."
 print "1) Keep left mouse button pressed move cursor slowly inside the window (left to right) where you want the lane to be marked."
 print "2) Close the window once you are done\n"
 
-#NUM_LANES = input("Enter the number of lanes (2-4) :")
+# Get number of lanes as input from user
+NUM_LANES = input("Enter the number of lanes (2-4): ")
 
+# Get name for the file that will be generated at the end
+FILE_NAME = raw_input("Enter the name for environment file (without file extension): ")
+
+# Initialize the pygame window once number of lanes are known
 pygame.init()
+pygame.display.set_caption("2D Car Simulator")
 screen = pygame.display.set_mode((1280, 720))
 screen.fill((255,255,255))
 
-curr_angle, prev_angle = 0.0, 0.0
 prev_pos = (0, 0)
-
-def interpolate(input_val, input_min, input_max, output_min, output_max):
-
-    output_val = input_val * (output_max-output_min)/(input_max-input_min) + output_min
-    return output_val
-
-
-initialized = False
 
 x_list = []
 y_list = []
 
-while True:
 
-    for event in pygame.event.get():
+def writeSimulationEnvironmentJsonFile(x_max, poly_eval):
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
+    global x_list, y_list, prev_pos
 
-            x_list.append(event.pos[0])
-            y_list.append(event.pos[1])
+    road_data = {}
 
-            screen.fill((0, 255, 0), ((event.pos[0], event.pos[1]), (5, 5)))
+    road_data['num_lanes'] = NUM_LANES
 
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_g:
+    road_data['lane_info'] = []
 
-            x_list = [0] + x_list
-            y_list = [y_list[0]] + y_list
+    for lane_id in range(NUM_LANES):
 
-            prev_pos = (x_list[0]+1, y_list[0])
+        prev_pos = (x_list[0], y_list[0])
 
-            poly_coordinates = np.polyfit(x_list, y_list, 9)
-            poly_eval = np.poly1d(poly_coordinates)
+        road_data['lane_info'].append({'lane_id' : lane_id, 'lane_points' : []})
 
-            for x in range(x_list[0], x_list[-1]):
+        for x in range(LANE_POINT_DIST_PIXELS, x_max, LANE_POINT_DIST_PIXELS):
 
-                y = poly_eval(x)
-                angle = math.degrees( math.atan2( y-prev_pos[1], x-prev_pos[0] ) )
+            y = int( poly_eval(x) )
+            angle = math.degrees(math.atan2(y - prev_pos[1], x - prev_pos[0]))
 
-                block_image_rotated = pygame.transform.rotozoom(block_image, -angle, 1)
-                rotated_rect = block_image_rotated.get_rect()
+            road_data['lane_info'][lane_id]['lane_points'].append({'x' : x, 'y' : (y + lane_id*LANE_WIDTH), 'theta' : angle})
 
-                rotated_rect.centerx = x
-                rotated_rect.centery = y
+            prev_pos = (x, y)
 
-                screen.blit(block_image_rotated, rotated_rect)
+    with open("generated_environments/"+FILE_NAME+".json", 'w') as outfile:
+        json.dump(road_data, outfile, indent = 4, sort_keys = True)
 
-                prev_pos = (x,y)
+    # Save current image with road and markings to be used as background for simulation
+    pygame.image.save(screen, "generated_environments/"+FILE_NAME+".png")
 
-            for x in range(x_list[0], x_list[-1]):
 
-                y = poly_eval(x)
+def generateLanes():
 
-                screen.fill((255, 255, 255), ((x,y), (2,2)))
+    global x_list, y_list, prev_pos
 
-                prev_pos = (x, y)
+    # Run the loop infinitely to get all event inputs and exit on window close or completion of road generation procedure
+    while True:
 
-        elif event.type == pygame.QUIT:
-            quit()
+        # Capture all pygame events
+        for event in pygame.event.get():
 
-    pygame.display.update()
+            # Get all mouse press events to mark the way-points that create the road
+            # Road is generated from these way-points using polynomial fit function of numpy library
+            if event.type == pygame.MOUSEBUTTONDOWN:
+
+                x_list.append(event.pos[0])
+                y_list.append(event.pos[1])
+
+                # Mark the point with green dot
+                screen.fill((0, 255, 0), ((event.pos[0], event.pos[1]), (5, 5)))
+
+            # Get key press event for 'g' which generates and draws the road based on the waypoints collected
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_g:
+
+                # Check if atleast one point was selected for road generation procedure
+                if len(x_list) == 0:
+
+                    print "\nYou have not selected any points for the road."
+                    print "Exiting now..."
+                    quit(1)
+
+                # Add way-point with x=0 for the 1st way-point selected so that the road starts from the start of screen
+                x_list = [0] + x_list
+                y_list = [y_list[0]] + y_list
+
+                prev_pos = (x_list[0], y_list[0])
+
+                # Run polynomial fit algorithm onb the selected points
+                poly_coordinates = np.polyfit(x_list, y_list, 7)
+                poly_eval = np.poly1d(poly_coordinates)
+
+                x_max = max(x_list)
+
+                # Generate lane point data for all lanes
+                # This loop also draws the base road with given number of lanes
+                for lane in range(NUM_LANES):
+
+                    for x in range(x_max):
+
+                        y = poly_eval(x)
+                        angle = math.degrees( math.atan2( y-prev_pos[1], x-prev_pos[0] ) )
+
+                        block_image_rotated = pygame.transform.rotozoom(block_image, -angle, 1)
+                        rotated_rect = block_image_rotated.get_rect()
+
+                        rotated_rect.centerx = x
+                        rotated_rect.centery = y + lane*LANE_WIDTH
+
+                        screen.blit(block_image_rotated, rotated_rect)
+
+                        prev_pos = (x, y)
+
+                # Update the display to visualize drawn roads
+                pygame.display.update()
+
+                # Draw lane separators and lane center markings
+                draw_lane_separator = True
+                for lane in range(NUM_LANES):
+
+                    for x in range(x_max):
+
+                        y = poly_eval(x)
+
+                        # Draw lane separator markings
+                        if draw_lane_separator and lane != NUM_LANES-1:
+                            lane_sep_pos = (x, int(y + lane*LANE_WIDTH + LANE_WIDTH/2))
+                            screen.fill((255, 255, 255), (lane_sep_pos, (1,1)))
+
+                        # Draw lane center markings
+                        if divmod(x, 45)[1] == 0:
+                            screen.fill((255, 255, 0), ((x, y + lane*LANE_WIDTH), (2, 2)))
+
+                        # Toggle lane separator markings on/off every 30 pixels
+                        if divmod(x, 30)[1] == 0:
+                            draw_lane_separator = not draw_lane_separator
+
+                writeSimulationEnvironmentJsonFile(x_max, poly_eval)
+
+            # Check if window is closed
+            elif event.type == pygame.QUIT:
+                quit()
+
+        pygame.display.update()
+
+
+
+if __name__ == "__main__":
+
+    generateLanes()
