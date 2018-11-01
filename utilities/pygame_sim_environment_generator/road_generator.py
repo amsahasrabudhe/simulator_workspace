@@ -5,7 +5,7 @@ import pygame
 import os
 import math
 import numpy as np
-import json
+import yaml
 
 # Define lane width (here height of image since road is represented horizontally)
 LANE_WIDTH = 60
@@ -67,8 +67,8 @@ def writeSimulationEnvironmentJsonFile(x_max, poly_eval):
 
             prev_pos = (x, y)
 
-    with open("generated_environments/"+FILE_NAME+".json", 'w') as outfile:
-        json.dump(road_data, outfile, indent = 4, sort_keys = True)
+    with open("generated_environments/"+FILE_NAME+".yaml", 'w') as outfile:
+        yaml.dump(road_data, outfile)
 
     # Save current image with road and markings to be used as background for simulation
     pygame.image.save(screen, "generated_environments/"+FILE_NAME+".png")
