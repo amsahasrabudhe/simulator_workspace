@@ -1,3 +1,4 @@
+autonomous_vehicle_pose: {heading: -0.0, x: 45, y: 395}
 lane_info:
 - lane_id: 0
   lane_points:
@@ -88,3 +89,8 @@ lane_info:
   - {theta: -0.0, x: 1230, y: 394}
   - {theta: -0.0, x: 1260, y: 394}
 num_lanes: 2
+traffic_vehicles:
+- vehicle_id: 0
+  vehicle_pose: {heading: -0.0, x: 855, y: 396}
+- vehicle_id: 1
+  vehicle_pose: {heading: -0.0, x: 496, y: 335}

@@ -33,7 +33,7 @@ FILE_NAME = raw_input("Enter the name for environment file (without file extensi
 
 # Initialize the pygame window once number of lanes are known
 pygame.init()
-pygame.display.set_caption("2D Car Simulator")
+pygame.display.set_caption("2D Car Simulator - Road Generator")
 screen = pygame.display.set_mode((1280, 720))
 screen.fill((255,255,255))
 
@@ -43,7 +43,7 @@ x_list = []
 y_list = []
 
 
-def writeSimulationEnvironmentJsonFile(x_max, poly_eval):
+def writeSimulationEnvironmentYamlFile(x_max, poly_eval):
 
     global x_list, y_list, prev_pos
 
@@ -62,7 +62,7 @@ def writeSimulationEnvironmentJsonFile(x_max, poly_eval):
         for x in range(LANE_POINT_DIST_PIXELS, x_max, LANE_POINT_DIST_PIXELS):
 
             y = int( poly_eval(x) )
-            angle = math.degrees(math.atan2(y - prev_pos[1], x - prev_pos[0]))
+            angle = -math.degrees(math.atan2(y - prev_pos[1], x - prev_pos[0]))
 
             road_data['lane_info'][lane_id]['lane_points'].append({'x' : x, 'y' : (y + lane_id*LANE_WIDTH), 'theta' : angle})
 
@@ -124,9 +124,9 @@ def generateLanes():
                     for x in range(x_max):
 
                         y = poly_eval(x)
-                        angle = math.degrees( math.atan2( y-prev_pos[1], x-prev_pos[0] ) )
+                        angle = -math.degrees( math.atan2( y-prev_pos[1], x-prev_pos[0] ) )
 
-                        block_image_rotated = pygame.transform.rotozoom(block_image, -angle, 1)
+                        block_image_rotated = pygame.transform.rotozoom(block_image, angle, 1)
                         rotated_rect = block_image_rotated.get_rect()
 
                         rotated_rect.centerx = x
@@ -160,7 +160,7 @@ def generateLanes():
                         if divmod(x, 30)[1] == 0:
                             draw_lane_separator = not draw_lane_separator
 
-                writeSimulationEnvironmentJsonFile(x_max, poly_eval)
+                writeSimulationEnvironmentYamlFile(x_max, poly_eval)
 
             # Check if window is closed
             elif event.type == pygame.QUIT:
