@@ -21,8 +21,9 @@ block_image = pygame.image.load(image_path)
 
 # Basic instructions for the user
 print "\nAfter you input the number of lanes, an empty window will open."
-print "1) Keep left mouse button pressed move cursor slowly inside the window (left to right) where you want the lane to be marked."
-print "2) Close the window once you are done\n"
+print "1) Click points on the screen you want the road to go through (make sure they make a simple shape)"
+print "2) Press 'g' to generate the road"
+print "3) Close the screen once a satisfactory road is generated\n"
 
 # Get number of lanes as input from user
 NUM_LANES = input("Enter the number of lanes (2-4): ")
