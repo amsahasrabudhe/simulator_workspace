@@ -47,5 +47,6 @@ install(DIRECTORY
 install(PROGRAMS
   src/run_simulation.py
   src/simulator.py
+  src/simulator_config.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
