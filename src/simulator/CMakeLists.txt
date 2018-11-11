@@ -45,8 +45,15 @@ install(DIRECTORY
 )
 
 install(PROGRAMS
+  src/__init__.py
   src/run_simulation.py
   src/simulator.py
-  src/simulator_config.py
+  src/simulator_helper_functions.py
+
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY
+  src/helper_classes
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

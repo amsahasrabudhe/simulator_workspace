@@ -90,7 +90,7 @@ lane_info:
   - {theta: -0.0, x: 1260, y: 394}
 num_lanes: 2
 traffic_vehicles:
-- vehicle_id: 0
+- vehicle_id: 100
   vehicle_pose: {heading: -0.0, x: 855, y: 396}
-- vehicle_id: 1
+- vehicle_id: 101
   vehicle_pose: {heading: -0.0, x: 496, y: 335}

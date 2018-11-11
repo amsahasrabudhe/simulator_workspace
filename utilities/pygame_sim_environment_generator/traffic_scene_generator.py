@@ -128,7 +128,7 @@ if __name__ == "__main__":
         position, heading = getCarPose(traffic_car_image)
 
         # Add information to the yaml data
-        env_data['traffic_vehicles'].append( {'vehicle_id': vehicle_id, 'vehicle_pose':{'x': position[0], 'y': position[1], 'heading': heading}} )
+        env_data['traffic_vehicles'].append( {'vehicle_id': 100+vehicle_id, 'vehicle_pose':{'x': position[0], 'y': position[1], 'heading': heading}} )
 
     OUTPUT_FILE_NAME = raw_input("Enter file name for output environment file (image will not be saved): ")
 
