@@ -4,6 +4,9 @@ class SimulatorConfig:
 
     def __init__(self):
 
+        self.ego_veh_state_in_topic     = "/ego_veh_state"
+        self.traffic_states_out_topic   = "/traffic_veh_states"
+
         self.window_width               = 1280
         self.window_height              = 720
 
@@ -12,7 +15,7 @@ class SimulatorConfig:
         self.env_yaml_file              = "resources/environments/two_lane_straight_two_cars.yaml"
         self.env_bg_image_file          = "resources/environments/two_lane_straight.png"
 
-        self.autonomous_car_image_file  = "resources/autonomous_car_small.png"
-        self.traffic_car_image_file     = "resources/traffic_car_small.png"
+        self.ego_veh_image_file         = "resources/ego_veh_small.png"
+        self.traffic_veh_image_file     = "resources/traffic_veh_small.png"
 
         self.display_update_duration_s  = 0.02

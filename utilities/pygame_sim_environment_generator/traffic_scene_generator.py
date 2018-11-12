@@ -116,7 +116,7 @@ if __name__ == "__main__":
     position, heading = getCarPose(autonomous_car_image)
 
     # Add information to the yaml data
-    env_data['autonomous_vehicle_pose'] = {'x': position[0], 'y': position[1], 'heading': heading}
+    env_data['ego_veh_pose'] = {'x': position[0], 'y': position[1], 'heading': heading}
 
     NUM_TRAFFIC_VEHICLES = input("Enter the number of traffic cars: ")
 

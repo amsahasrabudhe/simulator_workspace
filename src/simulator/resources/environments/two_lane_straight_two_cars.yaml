@@ -1,4 +1,4 @@
-autonomous_vehicle_pose: {heading: -0.0, x: 45, y: 395}
+ego_veh_pose: {heading: -0.0, x: 45, y: 395}
 lane_info:
 - lane_id: 0
   lane_points:

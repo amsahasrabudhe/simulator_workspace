@@ -15,8 +15,8 @@ class Simulator:
 
         self.setupSimulation()
 
-        self.auto_car_image    = loadImage(self, self.sim_config.autonomous_car_image_file )
-        self.traffic_car_image = loadImage(self, self.sim_config.traffic_car_image_file )
+        self.ego_veh_image     = loadImage(self, self.sim_config.ego_veh_image_file )
+        self.traffic_veh_image = loadImage(self, self.sim_config.traffic_veh_image_file )
 
         loadEnvironment(self)
 
@@ -25,14 +25,17 @@ class Simulator:
 
     def loadConfig(self, cfg):
 
+        cfg.ego_veh_state_in_topic    = loadParam("/simulator/ego_veh_state_in_topic", "/ego_veh_state")
+        cfg.traffic_states_out_topic   = loadParam("/simulator/traffic_states_out_topic", "/traffic_veh_states")
+
         cfg.window_width               = loadParam("/simulator/window_width", 1280)
         cfg.window_height              = loadParam("/simulator/window_height", 720)
 
         cfg.env_yaml_file              = loadParam("/simulator/env_yaml_file", "resources/environments/two_lane_straight_two_cars.yaml")
         cfg.env_bg_image_file          = loadParam("/simulator/env_bg_image_file", "resources/environments/two_lane_straight.png")
 
-        cfg.autonomous_car_image_file  = loadParam("/simulator/autonomous_car_image_file", "resources/autonomous_car_small.png")
-        cfg.traffic_car_image_file     = loadParam("/simulator/traffic_car_image_file", "resources/traffic_car_small.png")
+        cfg.ego_veh_image_file         = loadParam("/simulator/ego_veh_image_file", "resources/ego_veh_small.png")
+        cfg.traffic_veh_image_file     = loadParam("/simulator/traffic_veh_image_file", "resources/traffic_veh_small.png")
 
         cfg.display_update_duration_s  = loadParam("/simulator/display_update_duration_s", 0.02)
 
@@ -53,9 +56,8 @@ class Simulator:
         checkPyGameQuit()
 
         self.screen.blit(self.bg_image, (0, 0))
-        rotateAndBlitImage(surface=self.screen, image=self.auto_car_image,
-                           center_pos=self.auto_car.pose.getPosition(), heading_angle=self.auto_car.pose.theta )
+        rotateAndBlitImage(self.screen, self.ego_veh_image, self.ego_veh.pose.getPosition(), self.ego_veh.pose.theta )
 
-        self.auto_car.pose.x += 5
+        self.ego_veh.pose.x += 5
 
         pygame.display.update()
