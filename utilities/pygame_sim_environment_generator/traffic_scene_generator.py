@@ -128,7 +128,13 @@ if __name__ == "__main__":
         position, heading = getCarPose(traffic_car_image)
 
         # Add information to the yaml data
-        env_data['traffic_vehicles'].append( {'vehicle_id': 100+vehicle_id, 'vehicle_pose':{'x': position[0], 'y': position[1], 'heading': heading}} )
+        traffic_vehicle_data = {}
+        traffic_vehicle_data['vehicle_id']       = 100 + vehicle_id
+        traffic_vehicle_data['vehicle_pose']     = {'x': position[0], 'y': position[1], 'heading': heading}
+        traffic_vehicle_data['initial_velocity'] = input("Enter vehicle's initial velocity in m/s (< 18): ")
+        traffic_vehicle_data['static'] = input("Will this vehicle act like an obstacle by not moving at all? (1=true, 0=false): ")
+
+        env_data['traffic_vehicles'].append( traffic_vehicle_data )
 
     OUTPUT_FILE_NAME = raw_input("Enter file name for output environment file (image will not be saved): ")
 
