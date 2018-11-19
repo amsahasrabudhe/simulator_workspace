@@ -14,7 +14,7 @@ class Vehicle:
 
         self.pose           = Pose(pos_x=veh_init_pos[0], pos_y=veh_init_pos[1], theta=veh_init_theta)
 
-        self.steering_angle = 0.0
+        self.steering       = 0.0
         self.vel            = 0.0
         self.accel          = 0.0
 

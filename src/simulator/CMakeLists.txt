@@ -7,15 +7,21 @@ project(simulator)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+set( packages
+    rospy
+    simulator_msgs
+)
+
 find_package(catkin REQUIRED COMPONENTS
-  rospy
+    ${packages}
 )
 
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES simulator
-  CATKIN_DEPENDS rospy
+  CATKIN_DEPENDS ${packages}
 #  DEPENDS system_lib
 )
 

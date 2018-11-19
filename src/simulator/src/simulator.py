@@ -11,7 +11,7 @@ class Simulator:
         self.sim_config = SimulatorConfig()
         self.loadConfig( self.sim_config )
 
-        self.current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.current_dir = os.path.dirname( os.path.abspath(__file__) )
 
         self.setupSimulation()
 
@@ -25,7 +25,7 @@ class Simulator:
 
     def loadConfig(self, cfg):
 
-        cfg.ego_veh_state_in_topic    = loadParam("/simulator/ego_veh_state_in_topic", "/ego_veh_state")
+        cfg.ego_veh_state_in_topic     = loadParam("/simulator/ego_veh_state_in_topic", "/ego_veh_state")
         cfg.traffic_states_out_topic   = loadParam("/simulator/traffic_states_out_topic", "/traffic_veh_states")
 
         cfg.window_width               = loadParam("/simulator/window_width", 1280)
@@ -61,3 +61,6 @@ class Simulator:
         self.ego_veh.pose.x += 5
 
         pygame.display.update()
+
+        if self.ego_veh.pose.x > 1280:
+            rospy.signal_shutdown("Road ended")

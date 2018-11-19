@@ -6,7 +6,10 @@ import pygame
 import yaml
 
 from helper_classes.vehicle import Vehicle
+from helper_classes.road_info import RoadInfo
+from helper_classes.pose import Pose
 
+from simulator_msgs.msg import VehState
 
 def loadEnvironment(sim_obj):
 
@@ -19,6 +22,31 @@ def loadEnvironment(sim_obj):
     # Upload scene information to ros parameter server for other packages to use
     rospy.set_param("sim_scene_data", sim_obj.env_data)
 
+    sim_obj.road_info = loadRoadInfo(sim_obj)
+
+    print sim_obj.road_info
+
+
+def loadRoadInfo(sim_obj):
+
+    temp_env_data = sim_obj.env_data
+
+    road_info = RoadInfo()
+    road_info.num_lanes = temp_env_data['num_lanes']
+
+    for lane_number in range(road_info.num_lanes):
+
+        lane_info = temp_env_data['lane_info'][lane_number]
+
+        lane_point_list = []
+        for lane_point in lane_info['lane_points']:
+
+            lane_point_pose = Pose(lane_point['x'], lane_point['y'], lane_point['theta'])
+            lane_point_list.append(lane_point_pose)
+
+        road_info.lanes[ lane_info['lane_id'] ] = lane_point_list
+
+    return road_info
 
 def setupEgoVehicle(sim_obj):
 
@@ -35,7 +63,8 @@ def setupEgoVehicle(sim_obj):
 
 def setupPublishersSubscribers(sim_obj):
 
-    #ego_veh_state_sub = rospy.Subscriber(sim_obj.sim_config.ego_veh_state_in_topic, )
+    sim_obj.traffic_states_pub = rospy.Publisher(sim_obj.sim_config.traffic_states_out_topic, VehState, 1)
+    #sim_obj.ego_veh_state_sub = rospy.Subscriber(sim_obj.sim_config.ego_veh_state_in_topic, )
     pass
 
 def loadImage(sim_obj, filename):
