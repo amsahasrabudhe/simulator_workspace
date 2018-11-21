@@ -1,5 +1,5 @@
-ego_veh_state_in_topic    : "/ego_veh_state"
-traffic_states_out_topic  : "/traffic_veh_states"
+ego_veh_state_topic       : "/ego_veh_state"
+traffic_states_topic      : "/traffic_veh_states"
 
 window_width              : 1280
 window_height             : 720
@@ -8,6 +8,6 @@ env_yaml_file             : "resources/environments/two_lane_straight_two_cars.y
 env_bg_image_file         : "resources/environments/two_lane_straight.png"
 
 ego_veh_image_file        : "resources/ego_veh_small.png"
-traffic_veh_image_file    : "resources/traffic_car_small.png"
+traffic_veh_image_file    : "resources/traffic_veh_small.png"
 
 display_update_duration_s : 0.02

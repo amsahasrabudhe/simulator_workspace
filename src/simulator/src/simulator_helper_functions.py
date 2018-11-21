@@ -63,9 +63,8 @@ def setupEgoVehicle(sim_obj):
 
 def setupPublishersSubscribers(sim_obj):
 
-    sim_obj.traffic_states_pub = rospy.Publisher(sim_obj.sim_config.traffic_states_out_topic, VehState, 1)
-    #sim_obj.ego_veh_state_sub = rospy.Subscriber(sim_obj.sim_config.ego_veh_state_in_topic, )
-    pass
+    sim_obj.traffic_states_pub = rospy.Publisher(sim_obj.sim_config.traffic_states_topic, VehState, 1)
+    sim_obj.ego_veh_state_sub = rospy.Subscriber(sim_obj.sim_config.ego_veh_state_topic, VehState, sim_obj.egoVehStateReceived)
 
 def loadImage(sim_obj, filename):
 
@@ -87,7 +86,7 @@ def checkPyGameQuit():
 
 def rotateAndBlitImage(surface, image, center_pos, heading_angle):
 
-    rotated_image = pygame.transform.rotozoom(image, heading_angle, 1)
+    rotated_image = pygame.transform.rotozoom(image, -heading_angle, 1)
     rotated_image_rect = rotated_image.get_rect()
 
     rotated_image_rect.centerx = center_pos[0]

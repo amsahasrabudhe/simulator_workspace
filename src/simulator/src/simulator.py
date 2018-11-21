@@ -20,13 +20,15 @@ class Simulator:
 
         loadEnvironment(self)
 
+        setupPublishersSubscribers(self)
+
         rospy.Timer(rospy.Duration(self.sim_config.display_update_duration_s), self.updateDisplay)
 
 
     def loadConfig(self, cfg):
 
-        cfg.ego_veh_state_in_topic     = loadParam("/simulator/ego_veh_state_in_topic", "/ego_veh_state")
-        cfg.traffic_states_out_topic   = loadParam("/simulator/traffic_states_out_topic", "/traffic_veh_states")
+        cfg.ego_veh_state_topic        = loadParam("/simulator/ego_veh_state_topic", "/ego_veh_state")
+        cfg.traffic_states_topic       = loadParam("/simulator/traffic_states_topic", "/traffic_veh_states")
 
         cfg.window_width               = loadParam("/simulator/window_width", 1280)
         cfg.window_height              = loadParam("/simulator/window_height", 720)
@@ -46,10 +48,19 @@ class Simulator:
         pygame.init()
         pygame.display.set_caption("2D Car Simulator")
 
+        print "PyGame window initialized!"
+
         self.screen = pygame.display.set_mode((self.sim_config.window_width, self.sim_config.window_height))
 
         self.bg_image = loadImage(self, self.sim_config.env_bg_image_file)
         self.screen.blit(self.bg_image, (0, 0))
+
+    def egoVehStateReceived(self, state):
+
+        self.ego_veh.pose.x = state.pose.x;
+        self.ego_veh.pose.y = state.pose.y;
+
+        self.ego_veh.pose.theta = state.pose.theta;
 
     def updateDisplay(self, event):
 
@@ -58,9 +69,7 @@ class Simulator:
         self.screen.blit(self.bg_image, (0, 0))
         rotateAndBlitImage(self.screen, self.ego_veh_image, self.ego_veh.pose.getPosition(), self.ego_veh.pose.theta )
 
-        self.ego_veh.pose.x += 5
-
         pygame.display.update()
 
         if self.ego_veh.pose.x > 1280:
-            rospy.signal_shutdown("Road ended")
+            rospy.signal_shutdown("Ego vehicle went out of bounds")

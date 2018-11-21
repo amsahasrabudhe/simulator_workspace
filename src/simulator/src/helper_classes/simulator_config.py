@@ -4,8 +4,8 @@ class SimulatorConfig:
 
     def __init__(self):
 
-        self.ego_veh_state_in_topic     = "/ego_veh_state"
-        self.traffic_states_out_topic   = "/traffic_veh_states"
+        self.ego_veh_state_topic        = "/ego_veh_state"
+        self.traffic_states_topic       = "/traffic_veh_states"
 
         self.window_width               = 1280
         self.window_height              = 720

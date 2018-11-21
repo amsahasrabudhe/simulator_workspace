@@ -12,7 +12,7 @@ class Pose:
 
     def __eq__(self, other):
 
-        if self.x == other.x and self.y == other.y
+        if self.x == other.x and self.y == other.y:
             return True
         return False
 

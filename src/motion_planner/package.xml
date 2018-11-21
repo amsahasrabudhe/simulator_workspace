@@ -16,12 +16,10 @@
 
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>message_generation</depend>
   <depend>message_runtime</depend>
   <depend>roscpp</depend>
   <depend>roslaunch</depend>
-  <depend>std_msgs</depend>
-  <depend>geometry_msgs</depend>
+  <depend>simulator_msgs</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

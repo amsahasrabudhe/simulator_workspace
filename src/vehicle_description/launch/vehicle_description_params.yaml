@@ -1,4 +1,5 @@
-car_length_m               : 4.8
+car_wheel_base_m           : 2.81
+car_length_m               : 4.78
 car_width_m                : 2.1
 
 max_acceleration_mps2      : 4.0
@@ -8,4 +9,4 @@ max_steering_angle_degree  : 40.0
 car_length_pixel            : 68
 car_width_pixel             : 30
 
-pixels_per_meter            : 14.16
+pixels_per_meter            : 14.23
