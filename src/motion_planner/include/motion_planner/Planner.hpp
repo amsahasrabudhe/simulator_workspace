@@ -32,6 +32,8 @@ class Planner
         PlannerConfig   m_config;
 
         EgoVehicle      m_ego_state;
+
+        ros::Time       m_last_update_time;
 };
 
 }

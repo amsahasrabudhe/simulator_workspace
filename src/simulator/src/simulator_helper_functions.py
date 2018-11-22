@@ -24,8 +24,6 @@ def loadEnvironment(sim_obj):
 
     sim_obj.road_info = loadRoadInfo(sim_obj)
 
-    print sim_obj.road_info
-
 
 def loadRoadInfo(sim_obj):
 
@@ -48,11 +46,12 @@ def loadRoadInfo(sim_obj):
 
     return road_info
 
+
 def setupEgoVehicle(sim_obj):
 
     ego_veh_id      = 0
-    ego_veh_pos     = ( sim_obj.env_data['ego_veh_pose']['x'], sim_obj.env_data['ego_veh_pose']['y'] )
-    ego_veh_heading = sim_obj.env_data['ego_veh_pose']['heading']
+    ego_veh_pos     = (sim_obj.env_data['ego_veh_pose']['x'], sim_obj.env_data['ego_veh_pose']['y'])
+    ego_veh_heading = sim_obj.env_data['ego_veh_pose']['theta']
 
     ego_veh = Vehicle(veh_id=ego_veh_id, veh_init_pos=ego_veh_pos, veh_init_theta=ego_veh_heading)
     ego_veh.max_vel = loadParam("/vehicle_description/max_velocity_mps", 17.8816)
@@ -61,10 +60,12 @@ def setupEgoVehicle(sim_obj):
 
     return ego_veh
 
+
 def setupPublishersSubscribers(sim_obj):
 
     sim_obj.traffic_states_pub = rospy.Publisher(sim_obj.sim_config.traffic_states_topic, VehState, 1)
     sim_obj.ego_veh_state_sub = rospy.Subscriber(sim_obj.sim_config.ego_veh_state_topic, VehState, sim_obj.egoVehStateReceived)
+
 
 def loadImage(sim_obj, filename):
 
@@ -81,7 +82,6 @@ def checkPyGameQuit():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            rospy.signal_shutdown("QUIT requested")
 
 
 def rotateAndBlitImage(surface, image, center_pos, heading_angle):
@@ -93,3 +93,23 @@ def rotateAndBlitImage(surface, image, center_pos, heading_angle):
     rotated_image_rect.centery = center_pos[1]
 
     surface.blit(rotated_image, rotated_image_rect)
+
+
+# @brief Converts position to simulator coordinate system
+def convertPosToSimCoordinates(sim_obj, world_position):
+
+    # X and Y coordinates converted from meters to pixel values for display purposes
+
+    x_pixels = world_position[0] * sim_obj.sim_config.pixels_per_meter
+    y_pixels = world_position[1] * sim_obj.sim_config.pixels_per_meter
+
+    # Invert Y coordinates to match simulator coordinate system
+    y_pixels = sim_obj.sim_config.window_height - y_pixels
+
+    return (x_pixels, y_pixels)
+
+
+# @brief convert angle to simulator coordinates
+def convertThetaToSim(theta):
+
+    return -theta

@@ -27,7 +27,7 @@ sleep 2
 #echo "Starting collision_detector node"
 #screen -d -m -S collision_detector bash -c "source install/setup.bash ; roslaunch collision_detector collision_detector.launch ; exec bash"
 
-sleep 2
+sleep 1.75
 
 echo "Starting motion_planner node"
 screen -d -m -S motion_planner bash -c "source install/setup.bash ; roslaunch motion_planner motion_planner.launch ; exec bash"

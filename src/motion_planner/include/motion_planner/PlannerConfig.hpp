@@ -18,9 +18,13 @@ class PlannerConfig
     public:     /// variables
 
         std::string     ego_veh_state_out_topic;
+        std::string     traffic_veh_states_in_topic;
+
+        double          max_vel;
+        double          max_accel;
+        double          max_steering;
 
         double          update_time_s;
-
 };
 
 }

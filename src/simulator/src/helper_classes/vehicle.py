@@ -2,10 +2,11 @@
 
 from pose import Pose
 
+
 class Vehicle:
 
     # Initializing variables with default value
-    def __init__(self, veh_id=0, veh_init_pos=(0,0), veh_init_theta=0.0):
+    def __init__(self, veh_id=0, veh_init_pos=(0, 0), veh_init_theta=0.0):
 
         self.veh_id         = veh_id
 
@@ -20,5 +21,5 @@ class Vehicle:
         self.accel          = 0.0
 
         self.max_steering_angle = 40.0      # degrees
-        self.max_vel            = 17.8816   # mps
+        self.max_vel            = 22.352    # mps
         self.max_accel          = 4.0       # mps2

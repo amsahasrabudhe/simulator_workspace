@@ -4,19 +4,32 @@ from helper_classes.simulator_config import SimulatorConfig
 
 from simulator_helper_functions import *
 
+
 class Simulator:
+
+    # Variable to hold simulator configuration related information
+    sim_config = None
+
+    # Variable to hold simulation scene related data
+    env_data = None
+
+    # Variable to hold ego vehicle related information
+    ego_veh = None
+
+    # List containing traffic vehicles
+    traffic = []
 
     def __init__(self):
 
         self.sim_config = SimulatorConfig()
-        self.loadConfig( self.sim_config )
+        self.loadConfig(self.sim_config)
 
-        self.current_dir = os.path.dirname( os.path.abspath(__file__) )
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
 
         self.setupSimulation()
 
-        self.ego_veh_image     = loadImage(self, self.sim_config.ego_veh_image_file )
-        self.traffic_veh_image = loadImage(self, self.sim_config.traffic_veh_image_file )
+        self.ego_veh_image     = loadImage(self, self.sim_config.ego_veh_image_file)
+        self.traffic_veh_image = loadImage(self, self.sim_config.traffic_veh_image_file)
 
         loadEnvironment(self)
 
@@ -41,7 +54,7 @@ class Simulator:
 
         cfg.display_update_duration_s  = loadParam("/simulator/display_update_duration_s", 0.02)
 
-        cfg.pixels_per_meter           = loadParam("/vehicle_description/pixels_per_meter", 14.16)
+        cfg.pixels_per_meter           = loadParam("/vehicle_description/pixels_per_meter", 14.2259)
 
     def setupSimulation(self):
 
@@ -67,9 +80,12 @@ class Simulator:
         checkPyGameQuit()
 
         self.screen.blit(self.bg_image, (0, 0))
-        rotateAndBlitImage(self.screen, self.ego_veh_image, self.ego_veh.pose.getPosition(), self.ego_veh.pose.theta )
+
+        # Display Ego vehicle using data received on rostopic
+        ego_sim_pos = convertPosToSimCoordinates(self, self.ego_veh.pose.getPosition())
+        rotateAndBlitImage(self.screen, self.ego_veh_image, ego_sim_pos, convertThetaToSim(self.ego_veh.pose.theta) )
 
         pygame.display.update()
 
-        if self.ego_veh.pose.x > 1280:
-            rospy.signal_shutdown("Ego vehicle went out of bounds")
+        if self.ego_veh.pose.x * self.sim_config.pixels_per_meter > 1280:
+            pygame.quit()

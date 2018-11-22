@@ -3,7 +3,7 @@ car_length_m               : 4.78
 car_width_m                : 2.1
 
 max_acceleration_mps2      : 4.0
-max_velocity_mps           : 17.8816        # Reduced max velocity for simulation purposes
+max_velocity_mps           : 22.352        # 50 mph Reduced max velocity for simulation purposes
 max_steering_angle_degree  : 40.0
 
 car_length_pixel            : 68

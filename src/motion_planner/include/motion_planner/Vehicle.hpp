@@ -10,6 +10,9 @@ class Vehicle
 {
     public:     /// functions
         Vehicle(const double& init_x=0.0, const double& init_y=0.0, const double& init_heading=0.0 , const double& init_vel=0.0 , const double& init_accel=0.0):
+            wheel_base(2.81),
+            length(4.78),
+            width(2.1),
             pose(init_x, init_y, init_heading),
             steering(0.0),
             vel(init_vel),
@@ -35,13 +38,22 @@ class Vehicle
             this->accel = accel;
         }
 
+        void setSteeringAngle(const double& steering_angle=0.0)
+        {
+            this->steering = steering_angle;
+        }
+
     public:     /// variables
 
-        Pose2D  pose;
+        double wheel_base;
+        double length;
+        double width;
 
-        double  steering;
-        double  vel;
-        double  accel;
+        Pose2D pose;
+
+        double steering;
+        double vel;
+        double accel;
 };
 
 }
