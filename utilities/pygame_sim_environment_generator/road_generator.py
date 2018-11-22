@@ -1,4 +1,7 @@
 """!@file Contains code to generate json file containing road related information for simulation.
+
+    NOTE: Y coordinates are inverted to make it similar to world 2D coordinate system with 0,0 starting from
+          bottom-left corner
 """
 
 import pygame
@@ -6,6 +9,13 @@ import os
 import math
 import numpy as np
 import yaml
+
+# Define dimensions of the pygame screen
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
+
+# Define pixels per meter for the environment being generated
+PIXELS_PER_METER = 14.2259
 
 # Define lane width (here height of image since road is represented horizontally)
 LANE_WIDTH = 60
@@ -34,13 +44,17 @@ FILE_NAME = raw_input("Enter the name for environment file (without file extensi
 # Initialize the pygame window once number of lanes are known
 pygame.init()
 pygame.display.set_caption("2D Car Simulator - Road Generator")
-screen = pygame.display.set_mode((1280, 720))
-screen.fill((255,255,255))
+screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+screen.fill((255, 255, 255))
 
 prev_pos = (0, 0)
 
 x_list = []
 y_list = []
+
+def invertY(y_val):
+
+    return (WINDOW_HEIGHT - y_val)
 
 
 def writeSimulationEnvironmentYamlFile(x_max, poly_eval):
@@ -62,9 +76,10 @@ def writeSimulationEnvironmentYamlFile(x_max, poly_eval):
         for x in range(LANE_POINT_DIST_PIXELS, x_max, LANE_POINT_DIST_PIXELS):
 
             y = int( poly_eval(x) )
-            angle = -math.degrees(math.atan2(y - prev_pos[1], x - prev_pos[0]))
+            angle = math.degrees(math.atan2(y - prev_pos[1], x - prev_pos[0]))
 
-            road_data['lane_info'][lane_id]['lane_points'].append({'x' : x, 'y' : (y + lane_id*LANE_WIDTH), 'theta' : angle})
+            lane_point_info = {'x' : x/PIXELS_PER_METER, 'y' : (y - lane_id*LANE_WIDTH)/PIXELS_PER_METER, 'theta' : angle}
+            road_data['lane_info'][lane_id]['lane_points'].append(lane_point_info)
 
             prev_pos = (x, y)
 
@@ -90,7 +105,7 @@ def generateLanes():
             if event.type == pygame.MOUSEBUTTONDOWN:
 
                 x_list.append(event.pos[0])
-                y_list.append(event.pos[1])
+                y_list.append( invertY(event.pos[1]) )
 
                 # Mark the point with green dot
                 screen.fill((0, 255, 0), ((event.pos[0], event.pos[1]), (5, 5)))
@@ -111,7 +126,7 @@ def generateLanes():
 
                 prev_pos = (x_list[0], y_list[0])
 
-                # Run polynomial fit algorithm onb the selected points
+                # Run polynomial fit algorithm on the selected points
                 poly_coordinates = np.polyfit(x_list, y_list, 7)
                 poly_eval = np.poly1d(poly_coordinates)
 
@@ -124,13 +139,15 @@ def generateLanes():
                     for x in range(x_max):
 
                         y = poly_eval(x)
-                        angle = -math.degrees( math.atan2( y-prev_pos[1], x-prev_pos[0] ) )
+                        angle = math.degrees( math.atan2( y-prev_pos[1], x-prev_pos[0] ) )
 
                         block_image_rotated = pygame.transform.rotozoom(block_image, angle, 1)
                         rotated_rect = block_image_rotated.get_rect()
 
+                        y_draw = invertY(y)
+
                         rotated_rect.centerx = x
-                        rotated_rect.centery = y + lane*LANE_WIDTH
+                        rotated_rect.centery = y_draw + lane*LANE_WIDTH
 
                         screen.blit(block_image_rotated, rotated_rect)
 
@@ -146,15 +163,16 @@ def generateLanes():
                     for x in range(x_max):
 
                         y = poly_eval(x)
+                        y_draw = invertY(y)
 
                         # Draw lane separator markings
                         if draw_lane_separator and lane != NUM_LANES-1:
-                            lane_sep_pos = (x, int(y + lane*LANE_WIDTH + LANE_WIDTH/2))
+                            lane_sep_pos = (x, int(y_draw + lane*LANE_WIDTH + LANE_WIDTH/2))
                             screen.fill((255, 255, 255), (lane_sep_pos, (1,1)))
 
                         # Draw lane center markings
                         if divmod(x, 45)[1] == 0:
-                            screen.fill((255, 255, 0), ((x, y + lane*LANE_WIDTH), (2, 2)))
+                            screen.fill((255, 255, 0), ((x, y_draw + lane*LANE_WIDTH), (2, 2)))
 
                         # Toggle lane separator markings on/off every 30 pixels
                         if divmod(x, 30)[1] == 0:

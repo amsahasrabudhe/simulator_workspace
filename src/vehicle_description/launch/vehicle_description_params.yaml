@@ -9,4 +9,4 @@ max_steering_angle_degree  : 40.0
 car_length_pixel            : 68
 car_width_pixel             : 30
 
-pixels_per_meter            : 14.23
+pixels_per_meter            : 14.2259

@@ -6,6 +6,13 @@ import os
 import math
 import yaml
 
+# Define dimensions of the pygame screen
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
+
+# Define pixels per meter for the environment being generated
+PIXELS_PER_METER = 14.2259
+
 # Load path of current directory to be used for loading other resources
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -44,6 +51,10 @@ pygame.display.set_caption("2D Car Simulator - Traffic Scene generator")
 screen = pygame.display.set_mode((1280, 720))
 screen.blit(road_image, (0,0))
 
+def invertY(y_val):
+
+    return (WINDOW_HEIGHT - y_val)
+
 
 def getCarPose(vehicle_image):
 
@@ -79,7 +90,10 @@ def getCarPose(vehicle_image):
                             # Clear image with bacground image
                             screen.blit(road_image, (0, 0))
 
-                            angle = -math.degrees(math.atan2(event.pos[1] - car_center[1], event.pos[0] - car_center[0]))
+                            angle_radians = math.atan2(invertY(event.pos[1]) - invertY(car_center[1]),
+                                                   event.pos[0] - car_center[0])
+
+                            angle = math.degrees(angle_radians)
 
                             car_image_rotated = pygame.transform.rotate(vehicle_image, angle)
                             car_rotated_rect = car_image_rotated.get_rect()
@@ -93,9 +107,15 @@ def getCarPose(vehicle_image):
 
                         elif event.type == pygame.MOUSEBUTTONDOWN:
 
-                            angle = -math.degrees(math.atan2(event.pos[1] - car_center[1], event.pos[0] - car_center[0]))
+                            angle_radians = math.atan2(invertY(event.pos[1]) - invertY(car_center[1]),
+                                                       event.pos[0] - car_center[0])
 
-                            return car_center, angle
+                            angle = math.degrees(angle_radians)
+
+                            # invert y before writing to the file
+                            car_center_inverted_y = (car_center[0], invertY(car_center[1]))
+
+                            return car_center_inverted_y, angle
 
                         # Check if window is closed
                         elif event.type == pygame.QUIT:
@@ -116,7 +136,7 @@ if __name__ == "__main__":
     position, heading = getCarPose(autonomous_car_image)
 
     # Add information to the yaml data
-    env_data['ego_veh_pose'] = {'x': position[0], 'y': position[1], 'heading': heading}
+    env_data['ego_veh_pose'] = {'x': position[0]/PIXELS_PER_METER, 'y': position[1]/PIXELS_PER_METER, 'theta': heading}
 
     NUM_TRAFFIC_VEHICLES = input("Enter the number of traffic cars: ")
 
@@ -130,7 +150,7 @@ if __name__ == "__main__":
         # Add information to the yaml data
         traffic_vehicle_data = {}
         traffic_vehicle_data['vehicle_id']       = 100 + vehicle_id
-        traffic_vehicle_data['vehicle_pose']     = {'x': position[0], 'y': position[1], 'heading': heading}
+        traffic_vehicle_data['vehicle_pose']     = {'x': position[0]/PIXELS_PER_METER, 'y': position[1]/PIXELS_PER_METER, 'theta': heading}
         traffic_vehicle_data['initial_velocity'] = input("Enter vehicle's initial velocity in m/s (< 18): ")
         traffic_vehicle_data['static'] = input("Will this vehicle act like an obstacle by not moving at all? (1=true, 0=false): ")
 
