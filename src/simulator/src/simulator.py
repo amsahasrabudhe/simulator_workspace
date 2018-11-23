@@ -68,12 +68,28 @@ class Simulator:
         self.bg_image = loadImage(self, self.sim_config.env_bg_image_file)
         self.screen.blit(self.bg_image, (0, 0))
 
-    def egoVehStateReceived(self, state):
+    def egoVehStateReceived(self, ego):
 
-        self.ego_veh.pose.x = state.pose.x;
-        self.ego_veh.pose.y = state.pose.y;
+        self.ego_veh.pose.x = ego.vehicle.pose.x;
+        self.ego_veh.pose.y = ego.vehicle.pose.y;
+        self.ego_veh.pose.theta = ego.vehicle.pose.theta;
 
-        self.ego_veh.pose.theta = state.pose.theta;
+        self.ego_veh.steering = ego.vehicle.steering
+        self.ego_veh.vel = ego.vehicle.vel
+        self.ego_veh.accel = ego.vehicle.accel
+
+        self.ego_veh.length = ego.vehicle.length
+        self.ego_veh.width = ego.vehicle.width
+
+    def displayInformationText(self):
+
+        text_font = pygame.font.Font('freesansbold.ttf', 20)
+        text_surface = text_font.render("EGO VEHICLE SPEED : "+str(self.ego_veh.vel*2.23694)[:5]+" MPH", True, (0, 0, 255))
+
+        text_rect = text_surface.get_rect()
+        text_rect.center = (1100, 25)
+
+        self.screen.blit(text_surface, text_rect)
 
     def updateDisplay(self, event):
 
@@ -83,7 +99,9 @@ class Simulator:
 
         # Display Ego vehicle using data received on rostopic
         ego_sim_pos = convertPosToSimCoordinates(self, self.ego_veh.pose.getPosition())
-        rotateAndBlitImage(self.screen, self.ego_veh_image, ego_sim_pos, convertThetaToSim(self.ego_veh.pose.theta) )
+        rotateAndBlitImage(self.screen, self.ego_veh_image, ego_sim_pos, convertThetaToSimDegrees(self.ego_veh.pose.theta) )
+
+        self.displayInformationText()
 
         pygame.display.update()
 

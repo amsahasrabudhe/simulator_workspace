@@ -17,6 +17,26 @@ class Pose2D
 
         }
 
+        Pose2D operator+ (const Pose2D& other)
+        {
+            return Pose2D(this->x+other.x, this->y+other.y, this->theta+other.theta);
+        }
+
+        Pose2D operator- (const Pose2D& other)
+        {
+            return Pose2D(this->x-other.x, this->y-other.y, this->theta-other.theta);
+        }
+
+        Pose2D operator* (const double& factor)
+        {
+            return Pose2D(this->x*factor, this->y*factor, this->theta*factor);
+        }
+
+        Pose2D operator/ (const double& factor)
+        {
+            return Pose2D(this->x/factor, this->y/factor, this->theta/factor);
+        }
+
     public:     /// variables
 
         double x;

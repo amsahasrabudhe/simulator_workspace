@@ -21,6 +21,8 @@ class Planner
 
         void setupEgoVehicle();
 
+        void updateEgoVehicleState();
+
         void publishEgoVehicleState();
 
     private:

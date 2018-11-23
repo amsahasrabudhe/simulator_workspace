@@ -23,3 +23,5 @@ class Vehicle:
         self.max_steering_angle = 40.0      # degrees
         self.max_vel            = 22.352    # mps
         self.max_accel          = 4.0       # mps2
+
+        self.traffic_veh    = False

@@ -9,7 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
-  VehState.msg
+  Vehicle.msg
+  EgoVehicle.msg
+  TrafficVehicles.msg
 )
 
 generate_messages(
