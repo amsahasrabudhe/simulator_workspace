@@ -136,7 +136,7 @@ if __name__ == "__main__":
     position, heading = getCarPose(autonomous_car_image)
 
     # Add information to the yaml data
-    env_data['ego_veh_pose'] = {'x': position[0]/PIXELS_PER_METER, 'y': position[1]/PIXELS_PER_METER, 'theta': heading}
+    env_data['ego_veh_pose'] = {'x': position[0]/PIXELS_PER_METER, 'y': position[1]/PIXELS_PER_METER, 'theta': math.radians(heading)}
 
     NUM_TRAFFIC_VEHICLES = input("Enter the number of traffic cars: ")
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         # Add information to the yaml data
         traffic_vehicle_data = {}
         traffic_vehicle_data['vehicle_id']       = 100 + vehicle_id
-        traffic_vehicle_data['vehicle_pose']     = {'x': position[0]/PIXELS_PER_METER, 'y': position[1]/PIXELS_PER_METER, 'theta': heading}
+        traffic_vehicle_data['vehicle_pose']     = {'x': position[0]/PIXELS_PER_METER, 'y': position[1]/PIXELS_PER_METER, 'theta': math.radians(heading)}
         traffic_vehicle_data['initial_velocity'] = input("Enter vehicle's initial velocity in m/s (< 18): ")
         traffic_vehicle_data['static'] = input("Will this vehicle act like an obstacle by not moving at all? (1=true, 0=false): ")
 

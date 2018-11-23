@@ -76,9 +76,10 @@ def writeSimulationEnvironmentYamlFile(x_max, poly_eval):
         for x in range(LANE_POINT_DIST_PIXELS, x_max, LANE_POINT_DIST_PIXELS):
 
             y = int( poly_eval(x) )
-            angle = math.degrees(math.atan2(y - prev_pos[1], x - prev_pos[0]))
 
-            lane_point_info = {'x' : x/PIXELS_PER_METER, 'y' : (y - lane_id*LANE_WIDTH)/PIXELS_PER_METER, 'theta' : angle}
+            angle_radians = math.atan2(y - prev_pos[1], x - prev_pos[0])
+
+            lane_point_info = {'x' : x/PIXELS_PER_METER, 'y' : (y - lane_id*LANE_WIDTH)/PIXELS_PER_METER, 'theta' : angle_radians}
             road_data['lane_info'][lane_id]['lane_points'].append(lane_point_info)
 
             prev_pos = (x, y)
