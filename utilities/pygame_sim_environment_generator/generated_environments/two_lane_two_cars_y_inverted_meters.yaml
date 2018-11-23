@@ -89,6 +89,7 @@ lane_info:
   - {theta: 0.0, x: 86.4620164629303, y: 25.024778748620474}
   - {theta: 0.0, x: 88.57084613275786, y: 25.024778748620474}
 num_lanes: 2
+lane_width: 4.217659339655136
 traffic_vehicles:
 - initial_velocity: 0
   static: 1

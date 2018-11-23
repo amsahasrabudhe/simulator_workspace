@@ -18,7 +18,8 @@ WINDOW_HEIGHT = 720
 PIXELS_PER_METER = 14.2259
 
 # Define lane width (here height of image since road is represented horizontally)
-LANE_WIDTH = 60
+LANE_WIDTH_PIXELS = 60
+LANE_WIDTH_METERS = LANE_WIDTH_PIXELS/PIXELS_PER_METER
 
 # Define the distance between two lane points (number of pixels) written to the json file
 LANE_POINT_DIST_PIXELS = 30
@@ -65,6 +66,8 @@ def writeSimulationEnvironmentYamlFile(x_max, poly_eval):
 
     road_data['num_lanes'] = NUM_LANES
 
+    road_data['lane_width'] = LANE_WIDTH_METERS
+
     road_data['lane_info'] = []
 
     for lane_id in range(NUM_LANES):
@@ -79,7 +82,7 @@ def writeSimulationEnvironmentYamlFile(x_max, poly_eval):
 
             angle_radians = math.atan2(y - prev_pos[1], x - prev_pos[0])
 
-            lane_point_info = {'x' : x/PIXELS_PER_METER, 'y' : (y - lane_id*LANE_WIDTH)/PIXELS_PER_METER, 'theta' : angle_radians}
+            lane_point_info = {'x' : x/PIXELS_PER_METER, 'y' : (y - lane_id*LANE_WIDTH_PIXELS)/PIXELS_PER_METER, 'theta' : angle_radians}
             road_data['lane_info'][lane_id]['lane_points'].append(lane_point_info)
 
             prev_pos = (x, y)
@@ -148,7 +151,7 @@ def generateLanes():
                         y_draw = invertY(y)
 
                         rotated_rect.centerx = x
-                        rotated_rect.centery = y_draw + lane*LANE_WIDTH
+                        rotated_rect.centery = y_draw + lane*LANE_WIDTH_PIXELS
 
                         screen.blit(block_image_rotated, rotated_rect)
 
@@ -168,12 +171,12 @@ def generateLanes():
 
                         # Draw lane separator markings
                         if draw_lane_separator and lane != NUM_LANES-1:
-                            lane_sep_pos = (x, int(y_draw + lane*LANE_WIDTH + LANE_WIDTH/2))
+                            lane_sep_pos = (x, int(y_draw + lane*LANE_WIDTH_PIXELS + LANE_WIDTH_PIXELS/2))
                             screen.fill((255, 255, 255), (lane_sep_pos, (1,1)))
 
                         # Draw lane center markings
                         if divmod(x, 45)[1] == 0:
-                            screen.fill((255, 255, 0), ((x, y_draw + lane*LANE_WIDTH), (2, 2)))
+                            screen.fill((255, 255, 0), ((x, y_draw + lane*LANE_WIDTH_PIXELS), (2, 2)))
 
                         # Toggle lane separator markings on/off every 30 pixels
                         if divmod(x, 30)[1] == 0:
