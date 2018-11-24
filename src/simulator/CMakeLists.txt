@@ -55,6 +55,7 @@ install(PROGRAMS
   src/run_simulation.py
   src/simulator.py
   src/simulator_helper_functions.py
+  src/traffic_generation_functions.py
 
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

@@ -74,6 +74,9 @@ def setupTrafficVehicles(sim_obj):
         veh_heading = vehicle['vehicle_pose']['theta']
 
         traffic_vehicle = Vehicle(veh_id=veh_id, veh_init_pos=veh_pos, veh_init_theta=veh_heading)
+
+        traffic_vehicle.vel = vehicle['initial_velocity']
+
         traffic_vehicle.max_vel = loadParam("/vehicle_description/max_velocity_mps", 17.8816)
         traffic_vehicle.max_accel = loadParam("/vehicle_description/max_acceleration_mps2", 4.0)
         traffic_vehicle.max_steering_angle = loadParam("/vehicle_description/max_steering_angle_degree", 40.0)
@@ -129,6 +132,6 @@ def convertPosToSimCoordinates(sim_obj, world_position):
 
 
 # @brief convert angle to simulator coordinates degrees
-def convertThetaToSimDegrees(theta):
+def convertToSimDegrees(theta):
 
     return math.degrees(-theta)

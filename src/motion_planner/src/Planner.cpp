@@ -87,21 +87,4 @@ void Planner::publishEgoVehicleState()
     m_ego_state_pub.publish( ros_ego_state );
 }
 
-/*///Basic implementation of bicycle model
-void Planner::updateEgoVehicleState()
-{
-    ros::Time now = ros::Time::now();
-    /// Calculate dt since last update in seconds
-    double dt = now.toSec() - m_last_update_time.toSec();
-
-    m_last_update_time = now;
-
-    m_ego_state.pose.theta += dt * (m_ego_state.vel * tan( m_ego_state.steering*toRadians ) / m_ego_state.wheel_base);
-
-    m_ego_state.vel += dt * m_ego_state.accel;
-
-    m_ego_state.pose.x += dt * m_ego_state.vel * cos( m_ego_state.pose.theta );
-    m_ego_state.pose.y += dt * m_ego_state.vel * sin( m_ego_state.pose.theta );
-}*/
-
 }

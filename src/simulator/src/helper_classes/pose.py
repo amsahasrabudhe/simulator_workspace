@@ -16,6 +16,22 @@ class Pose:
             return True
         return False
 
+    def __add__(self, other):
+
+        return Pose(self.x+other.x, self.y+other.y, self.theta+other.theta)
+
+    def __sub__(self, other):
+
+        return Pose(self.x-other.x, self.y-other.y, self.theta-other.theta)
+
+    def multiply(self, factor):
+
+        return Pose(self.x*factor, self.y*factor, self.theta*factor)
+
+    def divide(self, factor):
+
+        return Pose(self.x/factor, self.y/factor, self.theta/factor)
+
     def getPosition(self):
 
         return (self.x, self.y)

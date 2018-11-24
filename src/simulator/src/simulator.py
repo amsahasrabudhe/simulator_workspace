@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
 from helper_classes.simulator_config import SimulatorConfig
-
+from traffic_generation_functions import *
 from simulator_helper_functions import *
 
+from simulator_msgs.msg import Vehicle
 
 class Simulator:
 
@@ -35,7 +36,8 @@ class Simulator:
 
         setupPublishersSubscribers(self)
 
-        rospy.Timer(rospy.Duration(self.sim_config.display_update_duration_s), self.updateDisplay)
+        # Last update time for traffic vehicle calculations
+        self.last_update_time = rospy.get_time()
 
 
     def loadConfig(self, cfg):
@@ -70,9 +72,9 @@ class Simulator:
 
     def egoVehStateReceived(self, ego):
 
-        self.ego_veh.pose.x = ego.vehicle.pose.x;
-        self.ego_veh.pose.y = ego.vehicle.pose.y;
-        self.ego_veh.pose.theta = ego.vehicle.pose.theta;
+        self.ego_veh.pose.x = ego.vehicle.pose.x
+        self.ego_veh.pose.y = ego.vehicle.pose.y
+        self.ego_veh.pose.theta = ego.vehicle.pose.theta
 
         self.ego_veh.steering = ego.vehicle.steering
         self.ego_veh.vel = ego.vehicle.vel
@@ -80,6 +82,35 @@ class Simulator:
 
         self.ego_veh.length = ego.vehicle.length
         self.ego_veh.width = ego.vehicle.width
+
+        # Display updated position of ego vehicle on screen along with updates to traffic vehicle position
+        self.updateDisplay()
+
+    def publishTrafficInformation(self):
+
+        print rospy.get_time()
+
+        ros_traffic = TrafficVehicles()
+        ros_traffic.header.stamp = rospy.Time.now()
+
+        for vehicle in self.traffic:
+
+            ros_vehicle = Vehicle()
+
+            ros_vehicle.pose.x = vehicle.pose.x
+            ros_vehicle.pose.y = vehicle.pose.y
+            ros_vehicle.pose.theta = vehicle.pose.theta
+
+            ros_vehicle.vel = vehicle.vel
+            ros_vehicle.accel = vehicle.accel
+            ros_vehicle.steering = vehicle.steering
+
+            ros_vehicle.length = vehicle.length
+            ros_vehicle.width = vehicle.width
+
+            ros_traffic.traffic.append(ros_vehicle)
+
+        self.traffic_states_pub.publish(ros_traffic)
 
     def displayInformationText(self):
 
@@ -91,15 +122,34 @@ class Simulator:
 
         self.screen.blit(text_surface, text_rect)
 
-    def updateDisplay(self, event):
+    def displayEgoVehicle(self):
+
+        # Display Ego vehicle using data received on rostopic
+        ego_sim_pos = convertPosToSimCoordinates(self, self.ego_veh.pose.getPosition())
+        rotateAndBlitImage(self.screen, self.ego_veh_image, ego_sim_pos, convertToSimDegrees(self.ego_veh.pose.theta))
+
+    def displayTrafficVehicles(self):
+
+        now = rospy.get_time()
+
+        updateTrafficVehiclesPositions(self, now)
+
+        for veh in self.traffic:
+
+            veh_pos = convertPosToSimCoordinates(self, veh.pose.getPosition())
+            rotateAndBlitImage(self.screen, self.traffic_veh_image, veh_pos, convertToSimDegrees(veh.pose.theta))
+
+        self.publishTrafficInformation()
+
+    def updateDisplay(self):
 
         checkPyGameQuit()
 
         self.screen.blit(self.bg_image, (0, 0))
 
-        # Display Ego vehicle using data received on rostopic
-        ego_sim_pos = convertPosToSimCoordinates(self, self.ego_veh.pose.getPosition())
-        rotateAndBlitImage(self.screen, self.ego_veh_image, ego_sim_pos, convertThetaToSimDegrees(self.ego_veh.pose.theta) )
+        self.displayEgoVehicle()
+
+        self.displayTrafficVehicles()
 
         self.displayInformationText()
 
