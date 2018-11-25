@@ -88,8 +88,6 @@ class Simulator:
 
     def publishTrafficInformation(self):
 
-        print rospy.get_time()
-
         ros_traffic = TrafficVehicles()
         ros_traffic.header.stamp = rospy.Time.now()
 
@@ -157,3 +155,4 @@ class Simulator:
 
         if self.ego_veh.pose.x * self.sim_config.pixels_per_meter > 1280:
             pygame.quit()
+            rospy.signal_shutdown("Car went out of bounds")

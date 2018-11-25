@@ -86,7 +86,7 @@ def setupTrafficVehicles(sim_obj):
 
 def setupPublishersSubscribers(sim_obj):
 
-    sim_obj.traffic_states_pub = rospy.Publisher(sim_obj.sim_config.traffic_states_topic, TrafficVehicles, 1)
+    sim_obj.traffic_states_pub = rospy.Publisher(sim_obj.sim_config.traffic_states_topic, TrafficVehicles)
     sim_obj.ego_veh_state_sub = rospy.Subscriber(sim_obj.sim_config.ego_veh_state_topic, EgoVehicle, sim_obj.egoVehStateReceived)
 
 
