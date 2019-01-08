@@ -21,6 +21,8 @@ void Planner::init()
 
     m_ego_state_pub = m_nh.advertise<simulator_msgs::EgoVehicle>(m_config.ego_veh_state_out_topic, 1, false);
 
+    m_traffic_states_sub = m_nh.subscribe<simulator_msgs::TrafficVehicles>(m_config.traffic_veh_states_in_topic, 1, &Planner::trafficStatesReceived, this);
+
     m_update_timer = m_nh.createTimer(ros::Duration(m_config.update_time_s), &Planner::update, this);
     m_update_timer.start();
 }
@@ -85,6 +87,11 @@ void Planner::publishEgoVehicleState()
     ros_ego_state.vehicle.width = m_ego_state.width;
 
     m_ego_state_pub.publish( ros_ego_state );
+}
+
+void Planner::trafficStatesReceived(const simulator_msgs::TrafficVehicles::ConstPtr& data)
+{
+    
 }
 
 }

@@ -1,0 +1,9 @@
+ego_veh_state_out_topic     : "/ego_veh_state"
+traffic_veh_states_in_topic : "/traffic_veh_states"
+
+max_vel                     : 17.8816   # 40 mph
+max_accel                   : 3.0
+max_jerk                    : 1.0
+max_steering                : 0.698132  # 40 degrees
+
+update_time_s               : 0.02

@@ -3,6 +3,7 @@ project(motion_planner)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
+FIND_PACKAGE(CUDA REQUIRED)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -19,6 +20,10 @@ find_package(Boost REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
     ${packages}
 )
+
+SET(CUDA_NVCC_FLAGS "-arch=sm_61" CACHE STRING "nvcc flags" FORCE)
+SET (CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+SET(LIB_TYPE STATIC)
 
 ###################################
 ## catkin specific configuration ##
