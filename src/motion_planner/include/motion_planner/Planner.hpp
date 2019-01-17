@@ -1,11 +1,10 @@
 /// @file This file contains the top level class which can use multiple other classes related to Motion planning algorithms
 
-#include "EgoVehicle.hpp"
-#include "PlannerConfig.hpp"
+#include <lib_motion_planning/types/EgoVehicle.hpp>
+#include <lib_motion_planning/configs/PlannerConfig.hpp>
 
 #include <simulator_msgs/TrafficVehicles.h>
 #include <ros/ros.h>
-
 
 namespace mp
 {

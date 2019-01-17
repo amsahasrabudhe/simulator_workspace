@@ -4,23 +4,25 @@ project(libraries_builder)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS
-  roslaunch
+find_package(catkin REQUIRED)
+
+# Set the module path in which to search
+SET( CMAKE_MODULE_PATH 
+    ${CMAKE_MODULE_PATH} 
+    ${CMAKE_SOURCE_DIR}/../libraries/CMakeModules
 )
 
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES motion_planner
-   CATKIN_DEPENDS roslaunch
-#  DEPENDS system_lib
-)
+INCLUDE( MotionPlanning )
+
+ADD_SUBDIRECTORY( ${CMAKE_SOURCE_DIR}/../libraries/core/lib_motion_planning lib_motion_planning )
+
+catkin_package()
 
 #############
 ## Install ##
 #############
 
-## Mark cpp header files for installation
- install(DIRECTORY
-   launch
-   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
- )
+install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/lib
+        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/..
+        USE_SOURCE_PERMISSIONS FILES_MATCHING PATTERN "lib_*.so*"
+)
