@@ -1,6 +1,6 @@
 /// @file This file contains the top level class which can use multiple other classes related to Motion planning algorithms
 
-#include <lib_motion_planning/types/EgoVehicle.hpp>
+#include <lib_motion_planning/types/OverallInfo.hpp>
 #include <lib_motion_planning/configs/PlannerConfig.hpp>
 
 #include <simulator_msgs/TrafficVehicles.h>
@@ -36,18 +36,18 @@ class Planner
         void trafficStatesReceived(const simulator_msgs::TrafficVehicles::ConstPtr& data);
 
     private:
-        ros::NodeHandle m_nh;
+        ros::NodeHandle                 m_nh;
 
-        ros::Publisher  m_ego_state_pub;
-        ros::Subscriber m_traffic_states_sub;
+        ros::Publisher                  m_ego_state_pub;
+        ros::Subscriber                 m_traffic_states_sub;
 
-        ros::Timer      m_update_timer;
+        ros::Timer                      m_update_timer;
 
-        PlannerConfig   m_config;
+        PlannerConfig                   m_config;
 
-        EgoVehicle      m_ego_state;
+        std::shared_ptr<OverallInfo>    m_overall_info;
 
-        ros::Time       m_last_update_time;
+        ros::Time                       m_last_update_time;
 };
 
 }

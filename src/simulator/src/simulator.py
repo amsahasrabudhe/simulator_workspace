@@ -123,7 +123,8 @@ class Simulator:
     def displayEgoVehicle(self):
 
         # Display Ego vehicle using data received on rostopic
-        ego_sim_pos = convertPosToSimCoordinates(self, self.ego_veh.pose.getPosition())
+        ego_center_pos = convertOriginToVehicleCenter(self, self.ego_veh.pose.getPosition())
+        ego_sim_pos = convertPosToSimCoordinates(self, ego_center_pos)
         rotateAndBlitImage(self.screen, self.ego_veh_image, ego_sim_pos, convertToSimDegrees(self.ego_veh.pose.theta))
 
     def displayTrafficVehicles(self):
@@ -133,11 +134,15 @@ class Simulator:
         updateTrafficVehiclesPositions(self, now)
 
         for veh in self.traffic:
-
             veh_pos = convertPosToSimCoordinates(self, veh.pose.getPosition())
             rotateAndBlitImage(self.screen, self.traffic_veh_image, veh_pos, convertToSimDegrees(veh.pose.theta))
 
         self.publishTrafficInformation()
+
+    def displayVehicleOrigin(self):
+
+        origin_pos = convertPosToSimCoordinates(self, self.ego_veh.pose.getPosition())
+        self.screen.fill((0, 255, 0), (origin_pos, (2, 2)))
 
     def updateDisplay(self):
 
@@ -146,10 +151,10 @@ class Simulator:
         self.screen.blit(self.bg_image, (0, 0))
 
         self.displayEgoVehicle()
-
         self.displayTrafficVehicles()
-
         self.displayInformationText()
+
+        self.displayVehicleOrigin()
 
         pygame.display.update()
 

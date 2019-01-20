@@ -121,7 +121,6 @@ def rotateAndBlitImage(surface, image, center_pos, heading_angle):
 def convertPosToSimCoordinates(sim_obj, world_position):
 
     # X and Y coordinates converted from meters to pixel values for display purposes
-
     x_pixels = world_position[0] * sim_obj.sim_config.pixels_per_meter
     y_pixels = world_position[1] * sim_obj.sim_config.pixels_per_meter
 
@@ -130,6 +129,13 @@ def convertPosToSimCoordinates(sim_obj, world_position):
 
     return x_pixels, y_pixels
 
+# @brief Returns center pos using vehicle origin coordinates as input
+def convertOriginToVehicleCenter(sim_obj, origin_position):
+
+    center_position_x = origin_position[0] + (sim_obj.ego_veh.wheel_base/2)*math.cos(sim_obj.ego_veh.pose.theta)
+    center_position_y = origin_position[1] + (sim_obj.ego_veh.wheel_base/2)*math.sin(sim_obj.ego_veh.pose.theta)
+
+    return center_position_x, center_position_y
 
 # @brief convert angle to simulator coordinates degrees
 def convertToSimDegrees(theta):

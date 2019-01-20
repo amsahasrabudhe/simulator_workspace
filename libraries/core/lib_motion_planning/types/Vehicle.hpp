@@ -10,6 +10,7 @@ class Vehicle
 {
     public:     /// functions
         Vehicle(const double& init_x=0.0, const double& init_y=0.0, const double& init_heading=0.0 , const double& init_vel=0.0 , const double& init_accel=0.0):
+            id(0),
             wheel_base(2.81),
             length(4.78),
             width(2.1),
@@ -44,6 +45,8 @@ class Vehicle
         }
 
     public:     /// variables
+
+        std::uint8_t id;
 
         double wheel_base;
         double length;

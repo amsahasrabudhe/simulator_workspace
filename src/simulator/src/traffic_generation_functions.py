@@ -9,19 +9,13 @@ def updateTrafficVehiclesPositions(sim_obj, now):
 
     for vehicle in sim_obj.traffic:
 
-        front_wheel_pos = vehicle.pose + Pose(math.cos(vehicle.pose.theta), math.sin(vehicle.pose.theta), 0).multiply(vehicle.wheel_base / 2)
+        curr_theta = vehicle.pose.theta
+        curr_vel = vehicle.vel
 
-        rear_wheel_pos = vehicle.pose - Pose(math.cos(vehicle.pose.theta), math.sin(vehicle.pose.theta), 0).multiply(vehicle.wheel_base / 2)
+        vehicle.pose.x += dt * curr_vel * math.cos(curr_theta)
+        vehicle.pose.y += dt * curr_vel * math.sin(curr_theta)
 
-        front_wheel_pos.x += dt * vehicle.vel * math.cos(vehicle.pose.theta + math.radians(vehicle.steering))
-        front_wheel_pos.y += dt * vehicle.vel * math.sin(vehicle.pose.theta + math.radians(vehicle.steering))
-
-        rear_wheel_pos.x += dt * vehicle.vel * math.cos(vehicle.pose.theta)
-        rear_wheel_pos.y += dt * vehicle.vel * math.sin(vehicle.pose.theta)
-
-        vehicle.pose = (front_wheel_pos + rear_wheel_pos).divide(2)
-
-        vehicle.pose.theta = math.atan2(front_wheel_pos.y - rear_wheel_pos.y, front_wheel_pos.x - rear_wheel_pos.x)
+        vehicle.pose.theta = curr_theta + dt * (curr_vel/vehicle.wheel_base)*math.tan(vehicle.steering)
 
         vehicle.vel += dt * vehicle.accel
 

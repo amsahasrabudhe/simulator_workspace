@@ -6,7 +6,7 @@
 
   <maintainer email="amsahasrabudhe@wpi.edu">ashwin</maintainer>
 
-  <license>TODO</license>
+  <license>GPLv3</license>
 
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
