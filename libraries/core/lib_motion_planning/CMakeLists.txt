@@ -5,7 +5,7 @@ add_compile_options(-std=c++11)
 #FIND_PACKAGE(CUDA REQUIRED)
 
 set( packages
-    
+
 )
 
 find_package(Boost REQUIRED)
@@ -24,7 +24,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 set( headers
     types/EgoVehicle.hpp
+    types/LaneInfo.hpp
     types/Pose2D.hpp
+    types/RoadInfo.hpp
     types/Vehicle.hpp
 
     configs/PlannerConfig.hpp

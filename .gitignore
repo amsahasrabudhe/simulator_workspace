@@ -6,6 +6,8 @@ src/CMakeLists.txt.user
 
 src/simulator/.idea
 utilities/pygame_sim_environment_generator/.idea
+
 .idea
+.vscode
 
 *.pyc

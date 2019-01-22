@@ -1,5 +1,8 @@
 /// @file This file contains class to hold 2D pose of the vehicle
 
+#ifndef POSE_2D_HPP
+#define POSE_2D_HPP
+
 #define toDegrees 57.2957795131
 #define toRadians 0.01745329251
 
@@ -46,3 +49,5 @@ class Pose2D
 };
 
 }
+
+#endif

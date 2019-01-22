@@ -51,12 +51,12 @@ include_directories(
 )
 
 set( headers
-    include/motion_planner/Planner.hpp
+    include/motion_planner/PlannerROSInterface.hpp
 )
 
 set( source
     src/main.cpp
-    src/Planner.cpp
+    src/PlannerROSInterface.cpp
 )
 
 set( libraries

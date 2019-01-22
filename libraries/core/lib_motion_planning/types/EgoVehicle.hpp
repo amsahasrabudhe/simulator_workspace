@@ -1,5 +1,8 @@
 /// @file This file contains class to hold the current state of the vehicle (ego or traffic)
 
+#ifndef EGO_VEHICLE_HPP
+#define EGO_VEHICLE_HPP
+
 #include "Vehicle.hpp"
 #include <cstdint>
 
@@ -25,3 +28,5 @@ class EgoVehicle : public Vehicle
 };
 
 }
+
+#endif //EGO_VEHICLE_HPP

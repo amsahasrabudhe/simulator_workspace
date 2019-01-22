@@ -1,5 +1,8 @@
 /// @file This file contains configuration information related to motion planner
 
+#ifndef PLANNER_CONFIG_HPP
+#define PLANNER_CONFIG_HPP
+
 #include <string>
 
 namespace mp
@@ -30,3 +33,5 @@ class PlannerConfig
 };
 
 }
+
+#endif

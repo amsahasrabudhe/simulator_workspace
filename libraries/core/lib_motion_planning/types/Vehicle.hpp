@@ -1,5 +1,8 @@
 /// @file This file contains class to hold the current state of the vehicle in general
 
+#ifndef VEHICLE_HPP
+#define VEHICLE_HPP
+
 #include "Pose2D.hpp"
 #include <cstdint>
 
@@ -60,3 +63,5 @@ class Vehicle
 };
 
 }
+
+#endif
