@@ -1,50 +1,106 @@
 /// @file
 
-#include "motion_planner/Planner.hpp"
-
 #include <math.h>
+#include <xmlrpcpp/XmlRpc.h>
+
+#include "motion_planner/PlannerROSInterface.hpp"
 #include <simulator_msgs/EgoVehicle.h>
 
 namespace mp
 {
 
-Planner::Planner(const ros::NodeHandle& nh):
+PlannerROSInterface::PlannerROSInterface(const ros::NodeHandle& nh):
     m_nh(nh),
     m_last_update_time(ros::Time::now())
 {
 
 }
 
-void Planner::init()
+void PlannerROSInterface::init()
 {
     m_overall_info = std::make_shared<OverallInfo>();
+
+    loadConfigFromParameterServer();
+    loadSceneDetailsFromParameterServer();
 
     setupEgoVehicle();
 
     m_ego_state_pub = m_nh.advertise<simulator_msgs::EgoVehicle>(m_config.ego_veh_state_out_topic, 1, false);
 
-    m_traffic_states_sub = m_nh.subscribe<simulator_msgs::TrafficVehicles>(m_config.traffic_veh_states_in_topic, 1, &Planner::trafficStatesReceived, this);
+    m_traffic_states_sub = m_nh.subscribe<simulator_msgs::TrafficVehicles>(m_config.traffic_veh_states_in_topic, 1, &PlannerROSInterface::trafficStatesReceived, this);
 
-    m_update_timer = m_nh.createTimer(ros::Duration(m_config.update_time_s), &Planner::update, this);
+    m_update_timer = m_nh.createTimer(ros::Duration(m_config.update_time_s), &PlannerROSInterface::update, this);
     m_update_timer.start();
 }
 
-void Planner::setupEgoVehicle()
-{
-    m_overall_info->ego_state->setPose(4.217659339655136, 25.024778748620474, 0);
-    m_overall_info->ego_state->setVel(0);
-    m_overall_info->ego_state->setAccel(1);
-    m_overall_info->ego_state->setSteeringAngle(0);
-}
-
-void Planner::update(const ros::TimerEvent& event)
+void PlannerROSInterface::update(const ros::TimerEvent& event)
 {
     updateEgoVehicleState();
 
     publishEgoVehicleState();
 }
 
-void Planner::updateEgoVehicleState()
+void PlannerROSInterface::loadConfigFromParameterServer()
+{ 
+    m_config.ego_veh_state_out_topic        = m_nh.param("/motion_planner/ego_veh_state_out_topic", static_cast<std::string>("/ego_veh_state"));
+    m_config.traffic_veh_states_in_topic    = m_nh.param("/motion_planner/traffic_veh_states_in_topic", static_cast<std::string>("/traffic_veh_states"));
+    
+    m_config.max_vel_mps        = m_nh.param("/motion_planner/max_vel_mps", 0.0);
+    m_config.max_accel_mpss     = m_nh.param("/motion_planner/max_accel_mpss", 0.0);
+    m_config.max_jerk_mpsss     = m_nh.param("/motion_planner/max_jerk_mpsss", 0.0);
+    
+    m_config.max_steering_rad   = m_nh.param("/motion_planner/max_steering_rad", 0.0);
+    
+    m_config.update_time_s      = m_nh.param("/motion_planner/update_time_s", 0.02);
+    
+}
+
+void PlannerROSInterface::loadSceneDetailsFromParameterServer()
+{
+    m_overall_info->road_info.num_lanes = m_nh.param("/sim_scene_data/num_lanes", 0);
+
+    double lane_width = m_nh.param("/sim_scene_data/lane_width", 0.0);
+
+    XmlRpc::XmlRpcValue value;
+    m_nh.param("/sim_scene_data/lane_info", value, value);
+
+    for (std::int8_t i = 0; i < value.size(); ++i)
+    {
+        LaneInfo lane;
+        
+        lane.lane_id = value[i]["lane_id"];
+        lane.lane_width = lane_width;
+
+        std::int32_t num_lane_points = value[i]["lane_points"].size();
+
+        for (std::int32_t j = 0; j < num_lane_points; ++j)
+        {
+            XmlRpc::XmlRpcValue lane_point_xml = value[i]["lane_points"][j];
+
+            Pose2D lane_point(lane_point_xml["x"], lane_point_xml["y"], lane_point_xml["theta"]);
+            lane.lane_points.push_back(lane_point);
+        }
+
+        m_overall_info->road_info.lanes.push_back(lane);
+    }
+
+}
+
+void PlannerROSInterface::setupEgoVehicle()
+{
+    /// Load initial values from scene information on parameter server
+    double init_x = m_nh.param("/sim_scene_data/ego_veh_pose/x", 0.0);
+    double init_y = m_nh.param("/sim_scene_data/ego_veh_pose/y", 0.0);
+    double init_theta = m_nh.param("/sim_scene_data/ego_veh_pose/theta", M_PI/2);
+
+    m_overall_info->ego_state->setPose(init_x, init_y, init_theta);
+    
+    m_overall_info->ego_state->setVel(10);
+    m_overall_info->ego_state->setAccel(1);
+    m_overall_info->ego_state->setSteeringAngle(0);
+}
+
+void PlannerROSInterface::updateEgoVehicleState()
 {
     ros::Time now = ros::Time::now();
     /// Calculate dt since last update in seconds
@@ -62,7 +118,7 @@ void Planner::updateEgoVehicleState()
     m_overall_info->ego_state->vel += dt * m_overall_info->ego_state->accel;
 }
 
-void Planner::publishEgoVehicleState()
+void PlannerROSInterface::publishEgoVehicleState()
 {
     simulator_msgs::EgoVehicle ros_ego_state;
 
@@ -82,7 +138,7 @@ void Planner::publishEgoVehicleState()
     m_ego_state_pub.publish( ros_ego_state );
 }
 
-void Planner::trafficStatesReceived(const simulator_msgs::TrafficVehicles::ConstPtr& data)
+void PlannerROSInterface::trafficStatesReceived(const simulator_msgs::TrafficVehicles::ConstPtr& data)
 {
     /// Clear current list of traffic vehicles and refill with new incoming list
     m_overall_info->traffic.clear();
@@ -94,9 +150,7 @@ void Planner::trafficStatesReceived(const simulator_msgs::TrafficVehicles::Const
         traffic_veh.id          = vehicle.id;
         traffic_veh.length      = vehicle.length;
         traffic_veh.width       = vehicle.width;
-        traffic_veh.pose.x      = vehicle.pose.x;
-        traffic_veh.pose.y      = vehicle.pose.y;
-        traffic_veh.pose.theta  = vehicle.pose.theta;
+        traffic_veh.pose        = Pose2D(vehicle.pose.x, vehicle.pose.y, vehicle.pose.theta);
         traffic_veh.steering    = vehicle.steering;
         traffic_veh.vel         = vehicle.vel;
         traffic_veh.accel       = vehicle.accel;

@@ -1,7 +1,10 @@
 /// @file This file contains the top level class which can use multiple other classes related to Motion planning algorithms
 
-#include <lib_motion_planning/types/OverallInfo.hpp>
-#include <lib_motion_planning/configs/PlannerConfig.hpp>
+#ifndef PLANNER_ROS_INTERFACE_HPP
+#define PLANNER_ROS_INTERFACE_HPP
+
+#include <lib/types/OverallInfo.hpp>
+#include <lib/configs/PlannerConfig.hpp>
 
 #include <simulator_msgs/TrafficVehicles.h>
 #include <ros/ros.h>
@@ -9,11 +12,11 @@
 namespace mp
 {
 
-class Planner
+class PlannerROSInterface
 {
     public:
         /// @brief Constructor for top level planner class
-        Planner(const ros::NodeHandle& nh);
+        PlannerROSInterface(const ros::NodeHandle& nh);
 
         /// @brief Init function to start publishers, subsribers and timers
         void init();
@@ -23,13 +26,20 @@ class Planner
 
     private:
 
-        /// @brief
+        /// @brief Load config for planner from ROS parameter server
+        void loadConfigFromParameterServer();        
+
+        /// @brief Load scene details from ROS parameter server uploaded by simulator node
+        void loadSceneDetailsFromParameterServer();
+
+        /// @brief Setup ego vehicle using data from ros parameters from simulator
         void setupEgoVehicle();
 
-        /// @brief
+        /// @brief Function to update ego vehicle state after current timestep
         void updateEgoVehicleState();
 
-        /// @brief
+        /// @brief Function to publish updated ego vehicle state
+        ///        Simulator subscribes to the new state and displays the updated position
         void publishEgoVehicleState();
 
         /// @brief Callback function for incoming traffic vehicles
@@ -51,3 +61,5 @@ class Planner
 };
 
 }
+
+#endif

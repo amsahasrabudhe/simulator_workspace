@@ -15,16 +15,16 @@ class LaneInfo
 {
     public:     /// functions
         LaneInfo():
-        	lane_id(-1),
-        	lane_width(0.0)
+            lane_id(-1),
+            lane_width(0.0)
         {
             
         }
 
     public:     /// variables
 
-        std::int32_t 		lane_id;
-        double				lane_width;
+        std::int32_t        lane_id;
+        double              lane_width;
 
         std::vector<Pose2D> lane_points;
 };

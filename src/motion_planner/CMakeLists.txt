@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(motion_planner)
 
-## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
-#FIND_PACKAGE(CUDA REQUIRED)
+
+#find_package(CUDA REQUIRED)
+find_package(Boost REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 set( packages
     message_runtime
@@ -19,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 # Set the module path in which to search
 SET( CMAKE_MODULE_PATH 
     ${CMAKE_MODULE_PATH} 
-    ${CMAKE_SOURCE_DIR}/../libraries/CMakeModules
+    ${CMAKE_SOURCE_DIR}/motion_planner
 )
 
 INCLUDE( MotionPlanning )
@@ -34,6 +36,7 @@ INCLUDE( MotionPlanning )
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES parallel_mp
   CATKIN_DEPENDS ${packages}
 )
 
@@ -50,6 +53,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+##################################################
+
 set( headers
     include/motion_planner/PlannerROSInterface.hpp
 )
@@ -59,14 +64,39 @@ set( source
     src/PlannerROSInterface.cpp
 )
 
-set( libraries
-    ${catkin_LIBRARIES}
-    parallel_mp
-)
-
 add_executable(motion_planner
     ${headers}
     ${source}
+)
+
+##################################################
+
+set( lib_headers
+    lib/algorithm/NonholonomicParallelAStar.hpp
+
+    lib/configs/PlannerConfig.hpp
+
+    lib/types/EgoVehicle.hpp
+    lib/types/LaneInfo.hpp
+    lib/types/Pose2D.hpp
+    lib/types/RoadInfo.hpp
+    lib/types/Vehicle.hpp
+)
+
+set( lib_source
+    lib/algorithm/NonholonomicParallelAStar.cpp
+)
+
+add_library( parallel_mp
+    ${lib_headers}
+    ${lib_source}
+)
+
+##################################################
+
+set( libraries
+    ${catkin_LIBRARIES}
+    parallel_mp
 )
 
 ## Specify libraries to link a library or executable target against

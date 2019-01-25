@@ -1,6 +1,6 @@
 # Project setup 
 
-INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/../libraries/core )
+INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/motion_planner )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 

@@ -24,10 +24,11 @@ class PlannerConfig
         std::string     ego_veh_state_out_topic;
         std::string     traffic_veh_states_in_topic;
 
-        double          max_vel;
-        double          max_accel;
-        double          max_steering;
-        double          max_jerk;
+        double          max_vel_mps;
+        double          max_accel_mpss;
+        double          max_jerk_mpsss;
+
+        double          max_steering_rad;
 
         double          update_time_s;
 };
