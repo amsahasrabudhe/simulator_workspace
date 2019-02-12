@@ -1,4 +1,4 @@
-/// @file This file contains class to individual Lane related information
+﻿/// @file This file contains class to individual Lane related information
 
 #ifndef LANE_INFO_HPP
 #define LANE_INFO_HPP
@@ -23,7 +23,7 @@ class LaneInfo
 
     public:     /// variables
 
-        std::int8_t         lane_id;        ///< Lane id
+        std::int32_t        lane_id;        ///< Lane id
         double              lane_width;     ///< Lane width
 
         std::vector<Pose2D> lane_points;    ///< Lane points info in 2D local frame

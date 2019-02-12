@@ -1,6 +1,7 @@
-car_wheel_base_m           : 2.81
+﻿car_wheel_base_m           : 2.81
 car_length_m               : 4.78
 car_width_m                : 2.1
+car_height_m               : 1.451
 
 max_acceleration_mps2      : 4.0
 max_velocity_mps           : 22.352        # 50 mph Reduced max velocity for simulation purposes

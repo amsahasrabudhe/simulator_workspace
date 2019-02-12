@@ -1,4 +1,4 @@
-/// @file This file contains class to hold the current state of the vehicle in general
+﻿/// @file This file contains class to hold the current state of the vehicle in general
 
 #ifndef VEHICLE_HPP
 #define VEHICLE_HPP
@@ -17,6 +17,7 @@ class Vehicle
             wheel_base(2.81),
             length(4.78),
             width(2.1),
+            height(1.451)
             pose(init_x, init_y, init_heading),
             steering(0.0),
             vel(init_vel),
@@ -54,6 +55,7 @@ class Vehicle
         double wheel_base;
         double length;
         double width;
+        double height;
 
         Pose2D pose;
 

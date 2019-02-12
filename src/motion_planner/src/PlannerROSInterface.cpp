@@ -1,4 +1,4 @@
-/// @file
+﻿/// @file
 
 #include <math.h>
 #include <XmlRpc.h>
@@ -12,7 +12,7 @@ PlannerROSInterface::PlannerROSInterface(const ros::NodeHandle& nh):
     m_nh(nh),
     m_last_update_time(ros::Time::now())
 {
-    m_parallel_mp_algo = std::make_unique<NonholonomicParallelAStar>(m_overall_info, m_config);
+
 }
 
 void PlannerROSInterface::init()
@@ -23,6 +23,9 @@ void PlannerROSInterface::init()
     loadSceneDetailsFromParameterServer();
 
     setupEgoVehicle();
+
+    m_parallel_mp_algo = std::make_unique<NonholonomicParallelAStar>(m_overall_info, m_config);
+    m_parallel_mp_algo->initialize();
 
     m_ego_state_pub = m_nh.advertise<simulator_msgs::EgoVehicle>(m_config.ego_veh_state_out_topic, 1, false);
 
@@ -56,7 +59,7 @@ void PlannerROSInterface::loadConfigFromParameterServer()
 
 void PlannerROSInterface::loadSceneDetailsFromParameterServer()
 {
-    m_overall_info->road_info.num_lanes = m_nh.param("/sim_scene_data/num_lanes", 0);
+    m_overall_info->road_info.num_lanes = static_cast<std::uint8_t>(m_nh.param("/sim_scene_data/num_lanes", 0));
 
     double lane_width = m_nh.param("/sim_scene_data/lane_width", 0.0);
 
@@ -146,7 +149,7 @@ void PlannerROSInterface::trafficStatesReceived(const simulator_msgs::TrafficVeh
     {
         Vehicle traffic_veh = Vehicle();
         
-        traffic_veh.id          = vehicle.id;
+        traffic_veh.id          = static_cast<std::uint8_t>(vehicle.id);
         traffic_veh.length      = vehicle.length;
         traffic_veh.width       = vehicle.width;
         traffic_veh.pose        = Pose2D(vehicle.pose.x, vehicle.pose.y, vehicle.pose.theta);

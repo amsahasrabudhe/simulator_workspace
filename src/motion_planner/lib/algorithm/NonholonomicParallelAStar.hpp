@@ -1,8 +1,9 @@
-/// @file This file contains Host code for CUDA based parallel Motion planning algorithm
+﻿/// @file This file contains Host code for CUDA based parallel Motion planning algorithm
 
 #ifndef NONHOLONOMIC_PARALLEL_ASTAR_HPP
 #define NONHOLONOMIC_PARALLEL_ASTAR_HPP
 
+#include <iostream>
 #include <string>
 
 #include "lib/configs/PlannerConfig.hpp"
@@ -26,6 +27,9 @@ class NonholonomicParallelAStar
         void update();
 
     private:
+
+        /// @brief
+        void localize(const std::int32_t& known_current_lane, const std::uint32_t& known_nearest_lane_point);
 
         /// @brief
         std::uint32_t findNearestLanePointByLaneId(const std::uint8_t& lane_id);

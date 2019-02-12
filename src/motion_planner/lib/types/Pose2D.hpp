@@ -1,7 +1,11 @@
-/// @file This file contains class to hold 2D pose of the vehicle
+﻿/// @file This file contains class to hold 2D pose of the vehicle
 
 #ifndef POSE_2D_HPP
 #define POSE_2D_HPP
+
+#include <math.h>
+#include <string>
+#include <sstream>
 
 #define toDegrees 57.2957795131
 #define toRadians 0.01745329251
@@ -38,6 +42,19 @@ class Pose2D
         Pose2D operator/ (const double& factor)
         {
             return Pose2D(this->x/factor, this->y/factor, this->theta/factor);
+        }
+
+        double distFrom(const Pose2D other)
+        {
+            return pow((pow((x - other.x), 2) + pow((y - other.y), 2)), 0.5);
+        }
+
+        std::string toString()
+        {
+            std::stringstream ss;
+            ss << "X: "<< x<< " , Y: "<< y<< " , Theta: "<< theta;
+
+            return ss.str();
         }
 
     public:     /// variables

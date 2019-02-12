@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(motion_planner)
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 #find_package(CUDA REQUIRED)
 find_package(Boost REQUIRED)
@@ -97,6 +97,7 @@ add_library( parallel_mp
 ##################################################
 
 set( libraries
+    ${Boost_LIBRARIES}
     ${catkin_LIBRARIES}
     parallel_mp
 )
@@ -112,6 +113,12 @@ target_link_libraries(motion_planner
 
 ## Mark executables and/or libraries for installation
 install( TARGETS motion_planner
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
+
+install( TARGETS parallel_mp
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
