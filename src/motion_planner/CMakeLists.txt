@@ -78,6 +78,8 @@ set( lib_headers
 
     lib/types/EgoVehicle.hpp
     lib/types/LaneInfo.hpp
+    lib/types/MPInfo.hpp
+    lib/types/OverallInfo.hpp
     lib/types/Pose2D.hpp
     lib/types/RoadInfo.hpp
     lib/types/Vehicle.hpp

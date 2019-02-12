@@ -3,11 +3,14 @@
 #ifndef PLANNER_ROS_INTERFACE_HPP
 #define PLANNER_ROS_INTERFACE_HPP
 
+#include "lib/algorithm/NonholonomicParallelAStar.hpp"
+
 #include <lib/types/OverallInfo.hpp>
 #include <lib/configs/PlannerConfig.hpp>
 
-#include <simulator_msgs/TrafficVehicles.h>
 #include <ros/ros.h>
+#include <simulator_msgs/EgoVehicle.h>
+#include <simulator_msgs/TrafficVehicles.h>
 
 namespace mp
 {
@@ -46,18 +49,18 @@ class PlannerROSInterface
         void trafficStatesReceived(const simulator_msgs::TrafficVehicles::ConstPtr& data);
 
     private:
-        ros::NodeHandle                 m_nh;
+        ros::NodeHandle                             m_nh;
 
-        ros::Publisher                  m_ego_state_pub;
-        ros::Subscriber                 m_traffic_states_sub;
+        ros::Publisher                              m_ego_state_pub;
+        ros::Subscriber                             m_traffic_states_sub;
 
-        ros::Timer                      m_update_timer;
+        ros::Timer                                  m_update_timer;
 
-        PlannerConfig                   m_config;
+        PlannerConfig                               m_config;
+        std::shared_ptr<OverallInfo>                m_overall_info;
+        std::unique_ptr<NonholonomicParallelAStar>  m_parallel_mp_algo;
 
-        std::shared_ptr<OverallInfo>    m_overall_info;
-
-        ros::Time                       m_last_update_time;
+        ros::Time                                   m_last_update_time;
 };
 
 }

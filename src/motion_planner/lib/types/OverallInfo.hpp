@@ -6,6 +6,7 @@
 #include "EgoVehicle.hpp"
 #include "RoadInfo.hpp"
 
+#include <boost/optional.hpp>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -33,6 +34,10 @@ class OverallInfo
         /// Traffic related info
         std::size_t             num_traffic_vehicles;
         std::vector<Vehicle>    traffic;
+
+        /// Localization related info
+        std::pair<std::uint32_t, Pose2D> nearest_lane_point_with_index;   ///< Nearest lane point with index
+        std::vector<Pose2D>                curr_poly_lanepoints;            ///< Current lane points used for poly fit
 };
 
 }

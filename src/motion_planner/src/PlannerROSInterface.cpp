@@ -1,10 +1,9 @@
 /// @file
 
 #include <math.h>
-#include <xmlrpcpp/XmlRpc.h>
+#include <XmlRpc.h>
 
 #include "motion_planner/PlannerROSInterface.hpp"
-#include <simulator_msgs/EgoVehicle.h>
 
 namespace mp
 {
@@ -13,7 +12,7 @@ PlannerROSInterface::PlannerROSInterface(const ros::NodeHandle& nh):
     m_nh(nh),
     m_last_update_time(ros::Time::now())
 {
-
+    m_parallel_mp_algo = std::make_unique<NonholonomicParallelAStar>(m_overall_info, m_config);
 }
 
 void PlannerROSInterface::init()

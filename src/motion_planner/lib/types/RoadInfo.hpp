@@ -22,9 +22,9 @@ class RoadInfo
 
     public:     /// variables
 
-        std::uint8_t            num_lanes;
+        std::uint8_t            num_lanes;  ///< Number of lanes on the road
 
-        std::vector<LaneInfo>   lanes;
+        std::vector<LaneInfo>   lanes;      ///< Vector of Lanes
 };
 
 }

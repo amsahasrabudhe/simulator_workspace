@@ -13,18 +13,14 @@ class EgoVehicle : public Vehicle
 {
     public:     /// functions
         EgoVehicle():
-            Vehicle(),
-            desired_lane(0),
-            lane_offset(0.0)
+            Vehicle()
         {
 
         }
 
     public:     /// variables
 
-        /// Feedback and planning related variables for ego vehicle
-        std::uint8_t    desired_lane;
-        double          lane_offset;
+        bool placeholder_var;
 };
 
 }
