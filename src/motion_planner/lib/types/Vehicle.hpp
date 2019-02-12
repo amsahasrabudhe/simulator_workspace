@@ -17,7 +17,7 @@ class Vehicle
             wheel_base(2.81),
             length(4.78),
             width(2.1),
-            height(1.451)
+            height(1.451),
             pose(init_x, init_y, init_heading),
             steering(0.0),
             vel(init_vel),
