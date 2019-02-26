@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+﻿cmake_minimum_required(VERSION 2.8.3)
 project(motion_planner)
 
 add_compile_options(-std=c++14)
@@ -12,6 +12,8 @@ set( packages
     roscpp
     roslaunch
     simulator_msgs
+    tf2
+    tf2_ros
 )
 
 find_package(catkin REQUIRED COMPONENTS
@@ -57,11 +59,13 @@ include_directories(
 
 set( headers
     include/motion_planner/PlannerROSInterface.hpp
+    include/motion_planner/PlannerVisualizer.hpp
 )
 
 set( source
     src/main.cpp
     src/PlannerROSInterface.cpp
+    src/PlannerVisualizer.cpp
 )
 
 add_executable(motion_planner

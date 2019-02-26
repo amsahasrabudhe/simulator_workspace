@@ -3,12 +3,12 @@
 #ifndef NONHOLONOMIC_PARALLEL_ASTAR_HPP
 #define NONHOLONOMIC_PARALLEL_ASTAR_HPP
 
+#include <eigen3/unsupported/Eigen/Splines>
 #include <iostream>
 #include <string>
 
 #include "lib/configs/PlannerConfig.hpp"
 #include "lib/types/OverallInfo.hpp"
-
 
 namespace mp
 {
@@ -29,13 +29,13 @@ class NonholonomicParallelAStar
     private:
 
         /// @brief
-        void localize(const std::int32_t& known_current_lane, const std::uint32_t& known_nearest_lane_point);
+        void localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index);
 
         /// @brief
-        std::uint32_t findNearestLanePointByLaneId(const std::uint8_t& lane_id);
+        Eigen::Spline3d getSpline( const std::vector<Pose2D>& points );
 
         /// @brief
-        std::vector<Pose2D> getLanePointsForPolyFit(const std::uint32_t& lane_point_id);
+        std::vector<Pose2D> getLanePointsForPolyFit();
 
     private:     /// variables
 

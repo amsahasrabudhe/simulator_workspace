@@ -24,8 +24,8 @@ class MPInfo
     public:     /// variables
 
         /// Feedback and planning related variables for ego vehicle
-        std::int8_t    current_lane;
-        std::int8_t    desired_lane;
+        std::size_t    current_lane;
+        std::size_t    desired_lane;
         double          lane_offset;
 };
 

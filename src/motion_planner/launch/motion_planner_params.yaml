@@ -1,5 +1,6 @@
-ego_veh_state_out_topic     : "/ego_veh_state"
+﻿ego_veh_state_out_topic     : "/ego_veh_state"
 traffic_veh_states_in_topic : "/traffic_veh_states"
+visualization_topic         : "/planner/visualization"
 
 max_vel_mps                 : 17.8816   # 40 mph
 max_accel_mpss              : 4.0

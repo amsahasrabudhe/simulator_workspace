@@ -15,7 +15,7 @@ PlannerROSInterface::PlannerROSInterface(const ros::NodeHandle& nh):
 
 }
 
-void PlannerROSInterface::init()
+void PlannerROSInterface::initialize()
 {
     m_overall_info = std::make_shared<OverallInfo>();
 
@@ -27,6 +27,9 @@ void PlannerROSInterface::init()
     m_parallel_mp_algo = std::make_unique<NonholonomicParallelAStar>(m_overall_info, m_config);
     m_parallel_mp_algo->initialize();
 
+    m_visualizer = std::make_unique<PlannerVisualizer>(m_nh, m_overall_info, m_config);
+    m_visualizer->initialize();
+
     m_ego_state_pub = m_nh.advertise<simulator_msgs::EgoVehicle>(m_config.ego_veh_state_out_topic, 1, false);
 
     m_traffic_states_sub = m_nh.subscribe<simulator_msgs::TrafficVehicles>(m_config.traffic_veh_states_in_topic, 1, &PlannerROSInterface::trafficStatesReceived, this);
@@ -37,8 +40,13 @@ void PlannerROSInterface::init()
 
 void PlannerROSInterface::update(const ros::TimerEvent& event)
 {
+    /// Update parallel motion planner algorithm
+    m_parallel_mp_algo->update();
+    m_visualizer->update();
+
     updateEgoVehicleState();
 
+    broadcastTransforms();
     publishEgoVehicleState();
 }
 
@@ -97,8 +105,8 @@ void PlannerROSInterface::setupEgoVehicle()
 
     m_overall_info->ego_state->setPose(init_x, init_y, init_theta);
     
-    m_overall_info->ego_state->setVel(10);
-    m_overall_info->ego_state->setAccel(1);
+    m_overall_info->ego_state->setVel(1.5);
+    m_overall_info->ego_state->setAccel(0);
     m_overall_info->ego_state->setSteeringAngle(0);
 }
 
@@ -118,6 +126,29 @@ void PlannerROSInterface::updateEgoVehicleState()
     m_overall_info->ego_state->pose.theta = curr_theta + dt * (curr_vel/m_overall_info->ego_state->wheel_base)*tan(m_overall_info->ego_state->steering);
     
     m_overall_info->ego_state->vel += dt * m_overall_info->ego_state->accel;
+}
+
+void PlannerROSInterface::broadcastTransforms()
+{
+    geometry_msgs::TransformStamped world_origin_to_vehicle_origin;
+
+    world_origin_to_vehicle_origin.header.stamp = ros::Time::now();
+    world_origin_to_vehicle_origin.header.frame_id = "world_origin";
+
+    world_origin_to_vehicle_origin.child_frame_id = "vehicle_origin";
+
+    world_origin_to_vehicle_origin.transform.translation.x = m_overall_info->ego_state->pose.x;
+    world_origin_to_vehicle_origin.transform.translation.y = m_overall_info->ego_state->pose.y;
+    world_origin_to_vehicle_origin.transform.translation.z = 0;
+
+    tf2::Quaternion q;
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.theta);
+    world_origin_to_vehicle_origin.transform.rotation.x = q.x();
+    world_origin_to_vehicle_origin.transform.rotation.y = q.y();
+    world_origin_to_vehicle_origin.transform.rotation.z = q.z();
+    world_origin_to_vehicle_origin.transform.rotation.w = q.w();
+
+    m_tf_broadcaster.sendTransform(world_origin_to_vehicle_origin);
 }
 
 void PlannerROSInterface::publishEgoVehicleState()

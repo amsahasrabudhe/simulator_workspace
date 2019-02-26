@@ -1,4 +1,4 @@
-#include "motion_planner/PlannerROSInterface.hpp"
+﻿#include "motion_planner/PlannerROSInterface.hpp"
 #include <ros/ros.h>
 
 int main(int argc, char **argv)
@@ -8,7 +8,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     mp::PlannerROSInterface planner_ros_interface(nh);
-    planner_ros_interface.init();
+    planner_ros_interface.initialize();
 
     ros::spin();
     return 0;

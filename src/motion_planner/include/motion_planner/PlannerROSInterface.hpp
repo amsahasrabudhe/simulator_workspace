@@ -1,14 +1,19 @@
-/// @file This file contains the top level class which can use multiple other classes related to Motion planning algorithms
+﻿/// @file This file contains the top level class which can use multiple other classes related to Motion planning algorithms
 
 #ifndef PLANNER_ROS_INTERFACE_HPP
 #define PLANNER_ROS_INTERFACE_HPP
 
+#include "PlannerVisualizer.hpp"
 #include "lib/algorithm/NonholonomicParallelAStar.hpp"
 
 #include <lib/types/OverallInfo.hpp>
 #include <lib/configs/PlannerConfig.hpp>
 
 #include <ros/ros.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+
 #include <simulator_msgs/EgoVehicle.h>
 #include <simulator_msgs/TrafficVehicles.h>
 
@@ -22,7 +27,7 @@ class PlannerROSInterface
         PlannerROSInterface(const ros::NodeHandle& nh);
 
         /// @brief Init function to start publishers, subsribers and timers
-        void init();
+        void initialize();
 
         /// @brief Timer based update function for planner
         void update(const ros::TimerEvent& event);
@@ -45,6 +50,9 @@ class PlannerROSInterface
         ///        Simulator subscribes to the new state and displays the updated position
         void publishEgoVehicleState();
 
+        /// @brief Broadcast required frame transformations
+        void broadcastTransforms();
+
         /// @brief Callback function for incoming traffic vehicles
         void trafficStatesReceived(const simulator_msgs::TrafficVehicles::ConstPtr& data);
 
@@ -54,11 +62,14 @@ class PlannerROSInterface
         ros::Publisher                              m_ego_state_pub;
         ros::Subscriber                             m_traffic_states_sub;
 
+        tf2_ros::TransformBroadcaster               m_tf_broadcaster;
+
         ros::Timer                                  m_update_timer;
 
         PlannerConfig                               m_config;
         std::shared_ptr<OverallInfo>                m_overall_info;
         std::unique_ptr<NonholonomicParallelAStar>  m_parallel_mp_algo;
+        std::unique_ptr<PlannerVisualizer>          m_visualizer;
 
         ros::Time                                   m_last_update_time;
 };

@@ -12,6 +12,8 @@
 #include <memory>
 #include <vector>
 
+#include <eigen3/unsupported/Eigen/Splines>
+
 namespace mp
 {
 
@@ -38,11 +40,12 @@ class OverallInfo
         std::vector<Vehicle>                traffic;
 
         /// Localization related info
-        std::pair<std::uint32_t, Pose2D>    nearest_lane_point_with_index;   ///< Nearest lane point with index
+        std::pair<std::size_t, Pose2D>      nearest_lane_point_with_index;   ///< Nearest lane point with index
         std::vector<Pose2D>                 curr_poly_lanepoints;            ///< Current lane points used for poly fit
 
         /// Motion Planning related info
         MPInfo                              mp_info;
+        Eigen::Spline3d                     lane_center_spline;
 };
 
 }

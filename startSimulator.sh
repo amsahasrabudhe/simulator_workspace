@@ -21,7 +21,7 @@ screen -d -m -S vehicle_description bash -c "source install/setup.bash ; roslaun
 echo "Starting simulator node"
 screen -d -m -S simulator bash -c "source install/setup.bash ; roslaunch simulator simulator.launch ; exec bash"
 
-sleep 3.5
+sleep 2.5
 
 echo "Starting motion_planner node"
 screen -d -m -S motion_planner bash -c "source install/setup.bash ; roslaunch motion_planner motion_planner.launch ; exec bash"

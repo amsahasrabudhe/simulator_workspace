@@ -1,8 +1,6 @@
 ﻿
 #include "NonholonomicParallelAStar.hpp"
 
-#include <eigen3/unsupported/Eigen/Splines>
-
 namespace mp
 {
 
@@ -21,24 +19,29 @@ void NonholonomicParallelAStar::initialize()
 
 void NonholonomicParallelAStar::update()
 {
+    // Get Lane points based on localization information
+    m_overall_info->curr_poly_lanepoints = getLanePointsForPolyFit();
+
+    // Fit spline for given lane points
+    m_overall_info->lane_center_spline = getSpline( m_overall_info->curr_poly_lanepoints );
 
 }
 
-void NonholonomicParallelAStar::localize(const std::int32_t& known_current_lane, const std::uint32_t& known_nearest_lane_point)
+void NonholonomicParallelAStar::localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index)
 {
-    std::int8_t curr_lane = -1;
+    std::size_t curr_lane = 0;
     std::pair<std::uint32_t, Pose2D> nearest_lane_point;
 
     double leastDist = 9999;
-    for (std::int32_t i = known_current_lane; i < m_overall_info->road_info.num_lanes; ++i)
+    for (std::size_t i = known_current_lane; i < m_overall_info->road_info.num_lanes; ++i)
     {
         LaneInfo lane = m_overall_info->road_info.lanes[i];
-        for (std::uint32_t j = known_nearest_lane_point; j < lane.lane_points.size(); ++j)
+        for (std::size_t j = known_nearest_lane_point_index; j < lane.lane_points.size(); ++j)
         {
             double dist = m_overall_info->ego_state->pose.distFrom( lane.lane_points[j] );
             if (dist < leastDist)
             {
-                curr_lane = static_cast<std::int8_t>(i);
+                curr_lane = i;
                 nearest_lane_point = std::make_pair(j, lane.lane_points[j]);
 
                 leastDist = dist;
@@ -53,22 +56,49 @@ void NonholonomicParallelAStar::localize(const std::int32_t& known_current_lane,
 
     /// Update MPInfo
     m_overall_info->mp_info.current_lane = curr_lane;
-    m_overall_info->mp_info.desired_lane = curr_lane;
+    //m_overall_info->mp_info.desired_lane = curr_lane;
 
     /// Update localization information in OverallInfo
     m_overall_info->nearest_lane_point_with_index = nearest_lane_point;
-
-    std::cout<<m_overall_info->nearest_lane_point_with_index.second.toString()<<std::endl;
 }
 
-std::uint32_t NonholonomicParallelAStar::findNearestLanePointByLaneId(const uint8_t &lane_id)
+std::vector<Pose2D> NonholonomicParallelAStar::getLanePointsForPolyFit()
 {
+    /// Get nearest lane point and lane id
+    localize(m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first);
 
+    std::vector<Pose2D> points;
+
+    std::size_t count = 0;
+    std::size_t first_pt = m_overall_info->nearest_lane_point_with_index.first - m_cfg.poly_fit_lane_points_behind_veh;
+
+    LaneInfo curr_lane = m_overall_info->road_info.lanes[m_overall_info->mp_info.current_lane];
+    while (count < m_cfg.poly_fit_min_lane_points && (first_pt + count) <= curr_lane.lane_points.size() )
+    {
+        Pose2D point;
+        point.x     = curr_lane.lane_points[first_pt + count].x;
+        point.y     = curr_lane.lane_points[first_pt + count].y;
+        point.theta = curr_lane.lane_points[first_pt + count].theta;
+
+        points.push_back(point);
+        count++;
+    }
+
+    return points;
 }
 
-std::vector<Pose2D> NonholonomicParallelAStar::getLanePointsForPolyFit(const uint32_t &lane_point_id)
+Eigen::Spline3d NonholonomicParallelAStar::getSpline( const std::vector<Pose2D>& points )
 {
+    Eigen::Vector3d spline_points( points.size() );
 
+    for (std::uint32_t i = 0; i < points.size(); ++i)
+    {
+        spline_points(0, i) = points[i].x;
+        spline_points(1, i) = points[i].y;
+        spline_points(2, i) = points[i].theta;
+    }
+
+    return Eigen::SplineFitting<Eigen::Spline3d>::Interpolate(spline_points, 3);
 }
 
 }
