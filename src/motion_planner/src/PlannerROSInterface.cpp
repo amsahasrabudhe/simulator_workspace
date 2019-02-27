@@ -106,7 +106,7 @@ void PlannerROSInterface::setupEgoVehicle()
     m_overall_info->ego_state->setPose(init_x, init_y, init_theta);
     
     m_overall_info->ego_state->setVel(1.5);
-    m_overall_info->ego_state->setAccel(0);
+    m_overall_info->ego_state->setAccel(0.01);
     m_overall_info->ego_state->setSteeringAngle(0);
 }
 

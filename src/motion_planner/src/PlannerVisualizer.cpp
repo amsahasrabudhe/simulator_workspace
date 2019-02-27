@@ -1,6 +1,7 @@
 ﻿/// @file
 
 #include <math.h>
+#include <tf2/LinearMath/Quaternion.h>
 
 #include "motion_planner/PlannerVisualizer.hpp"
 
@@ -49,7 +50,7 @@ void PlannerVisualizer::addVisualization()
 
         point.pose.position.x = m_overall_info->curr_poly_lanepoints[i].x;
         point.pose.position.y = m_overall_info->curr_poly_lanepoints[i].y;
-        point.pose.position.z = 0;
+        point.pose.position.z = 0.1;
 
         point.scale.x = 0.1;
         point.scale.y = 0.1;
@@ -69,42 +70,45 @@ void PlannerVisualizer::addVisualization()
     // Add markers for lanes visualization
     for (std::size_t i = 0; i < m_overall_info->road_info.lanes.size(); ++i)
     {
-        visualization_msgs::Marker lane_marker;
-
-        lane_marker.header.stamp = ros::Time::now();
-        lane_marker.header.frame_id = "world_origin";
-
-        lane_marker.id     = 100+static_cast<int>(i);
-        lane_marker.type   = visualization_msgs::Marker::LINE_STRIP;
-        lane_marker.action = visualization_msgs::Marker::ADD;
-        lane_marker.ns     = "lanes";
-
-        lane_marker.scale.x = m_overall_info->road_info.lanes[i].lane_width - 0.1;  // - 0.1 to show gap between lanes
-        lane_marker.scale.z = 0.1;
-
-        lane_marker.lifetime = ros::Duration(0);
-        lane_marker.frame_locked = false;
-
         LaneInfo lane = m_overall_info->road_info.lanes[i];
         for (std::size_t j = 0; j < lane.lane_points.size(); ++j)
         {
-            geometry_msgs::Point point;
-            point.x = lane.lane_points[j].x;
-            point.y = lane.lane_points[j].y;
-            point.z = 0;
+            visualization_msgs::Marker lane_point_marker;
 
-            lane_marker.points.push_back(point);
+            lane_point_marker.header.stamp = ros::Time::now();
+            lane_point_marker.header.frame_id = "world_origin";
 
-            std_msgs::ColorRGBA color;
-            color.r = 0.3f;
-            color.g = 0.3f;
-            color.b = 0.3f;
-            color.a = 1.0;
+            lane_point_marker.id     = 100*static_cast<int>(i) + static_cast<int>(j);
+            lane_point_marker.type   = visualization_msgs::Marker::CUBE;
+            lane_point_marker.action = visualization_msgs::Marker::ADD;
+            lane_point_marker.ns     = "lanes";
 
-            lane_marker.colors.push_back(color);
+            lane_point_marker.pose.position.x = lane.lane_points[j].x;
+            lane_point_marker.pose.position.y = lane.lane_points[j].y;
+            lane_point_marker.pose.position.z = 0;
+
+            tf2::Quaternion q;
+            q.setRPY(0, 0, lane.lane_points[j].theta);
+
+            lane_point_marker.pose.orientation.x = q.x();
+            lane_point_marker.pose.orientation.y = q.y();
+            lane_point_marker.pose.orientation.z = q.z();
+            lane_point_marker.pose.orientation.w = q.w();
+
+            lane_point_marker.scale.x = 2.3;
+            lane_point_marker.scale.y = m_overall_info->road_info.lanes[i].lane_width - 0.1;  // - 0.1 to show gap between lanes
+            lane_point_marker.scale.z = 0.1;
+
+            lane_point_marker.color.r = 0.3f;
+            lane_point_marker.color.g = 0.3f;
+            lane_point_marker.color.b = 0.3f;
+            lane_point_marker.color.a = 1.0;
+
+            lane_point_marker.lifetime = ros::Duration(0);
+            lane_point_marker.frame_locked = true;
+
+            m_vis_msg->markers.push_back(lane_point_marker);
         }
-
-        m_vis_msg->markers.push_back(lane_marker);
     }
 
     // Draw ego vehicle
@@ -122,6 +126,14 @@ void PlannerVisualizer::addVisualization()
     vehicle.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.theta) * m_overall_info->ego_state->wheel_base/2;
     vehicle.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.theta) * m_overall_info->ego_state->wheel_base/2;
     vehicle.pose.position.z = m_overall_info->ego_state->height / 2;
+
+    tf2::Quaternion q;
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.theta);
+
+    vehicle.pose.orientation.x = q.x();
+    vehicle.pose.orientation.y = q.y();
+    vehicle.pose.orientation.z = q.z();
+    vehicle.pose.orientation.w = q.w();
 
     vehicle.scale.x = m_overall_info->ego_state->length;
     vehicle.scale.y = m_overall_info->ego_state->width;
@@ -154,6 +166,14 @@ void PlannerVisualizer::addVisualization()
         traffic_car.pose.position.x = m_overall_info->traffic[i].pose.x + cos(m_overall_info->traffic[i].pose.theta) * m_overall_info->traffic[i].wheel_base/2;
         traffic_car.pose.position.y = m_overall_info->traffic[i].pose.y + sin(m_overall_info->traffic[i].pose.theta) * m_overall_info->traffic[i].wheel_base/2;
         traffic_car.pose.position.z = m_overall_info->traffic[i].height / 2;
+
+        tf2::Quaternion q;
+        q.setRPY(0, 0, m_overall_info->traffic[i].pose.theta);
+
+        traffic_car.pose.orientation.x = q.x();
+        traffic_car.pose.orientation.y = q.y();
+        traffic_car.pose.orientation.z = q.z();
+        traffic_car.pose.orientation.w = q.w();
 
         traffic_car.scale.x = m_overall_info->traffic[i].length;
         traffic_car.scale.y = m_overall_info->traffic[i].width;

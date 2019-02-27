@@ -32,8 +32,10 @@ void NonholonomicParallelAStar::localize(const std::size_t& known_current_lane, 
     std::size_t curr_lane = 0;
     std::pair<std::uint32_t, Pose2D> nearest_lane_point;
 
+    // TODO: Optimize localize function to find nearest point
+
     double leastDist = 9999;
-    for (std::size_t i = known_current_lane; i < m_overall_info->road_info.num_lanes; ++i)
+    for (std::size_t i = 0; i < m_overall_info->road_info.num_lanes; ++i)
     {
         LaneInfo lane = m_overall_info->road_info.lanes[i];
         for (std::size_t j = known_nearest_lane_point_index; j < lane.lane_points.size(); ++j)
