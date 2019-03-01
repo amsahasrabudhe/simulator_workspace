@@ -3,6 +3,8 @@
 #include <math.h>
 #include <XmlRpc.h>
 
+#include <lib/helper_functions/boost_geometry_helper_functions.hpp>
+
 #include "motion_planner/PlannerROSInterface.hpp"
 
 namespace mp
@@ -45,6 +47,20 @@ void PlannerROSInterface::update(const ros::TimerEvent& event)
     m_visualizer->update();
 
     updateEgoVehicleState();
+
+    /// Update boost polygon information
+    m_overall_info->ego_state->polygon_points = geometry::getVehiclePolygonPoints(*m_overall_info->ego_state);
+
+    BoostPolygon ego_polygon = geometry::getVehiclePolygonFromPoints(m_overall_info->ego_state->polygon_points);
+
+    if (boost::geometry::within( ego_polygon, m_overall_info->road_info.road_polygon ))
+    {
+        std::cout<<"INSIDE ROAD BOUNDARY"<<std::endl;
+    }
+    else
+    {
+        std::cout<<"WENT OFFROAD!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
+    }
 
     broadcastTransforms();
     publishEgoVehicleState();
@@ -94,6 +110,9 @@ void PlannerROSInterface::loadSceneDetailsFromParameterServer()
         m_overall_info->road_info.lanes.push_back(lane);
     }
 
+    // Set road polygon
+    m_overall_info->road_info.road_polygon_points = geometry::getRoadPolygonPoints( m_overall_info->road_info );
+    m_overall_info->road_info.road_polygon = geometry::getRoadPolygon( m_overall_info->road_info );
 }
 
 void PlannerROSInterface::setupEgoVehicle()
@@ -187,6 +206,8 @@ void PlannerROSInterface::trafficStatesReceived(const simulator_msgs::TrafficVeh
         traffic_veh.steering    = vehicle.steering;
         traffic_veh.vel         = vehicle.vel;
         traffic_veh.accel       = vehicle.accel;
+
+        traffic_veh.polygon_points = geometry::getVehiclePolygonPoints(traffic_veh);
 
         m_overall_info->traffic.push_back(traffic_veh);
     }

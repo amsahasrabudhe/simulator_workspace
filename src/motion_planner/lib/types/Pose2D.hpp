@@ -3,6 +3,9 @@
 #ifndef POSE_2D_HPP
 #define POSE_2D_HPP
 
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
 #include <math.h>
 #include <string>
 #include <sstream>
@@ -12,6 +15,10 @@
 
 namespace mp
 {
+
+using BoostPoint = boost::geometry::model::d2::point_xy<double>;
+using BoostPointList = std::vector<BoostPoint>;
+using BoostPolygon = boost::geometry::model::polygon<BoostPoint>;
 
 class Pose2D
 {
@@ -47,6 +54,11 @@ class Pose2D
         double distFrom(const Pose2D other)
         {
             return pow((pow((x - other.x), 2) + pow((y - other.y), 2)), 0.5);
+        }
+
+        BoostPoint getBoostPoint()
+        {
+            return BoostPoint(x, y);
         }
 
         std::string toString()

@@ -28,6 +28,13 @@ class PlannerVisualizer
         /// @brief Function to publish visualization messages
         void addVisualization();
 
+        void addSplineLanePointsVis();
+        void addLanesVis();
+        void addEgoVehicleVis();
+        void addTrafficVis();
+        void addRoadPolygonVis();
+        void addEgoPolygonVis();
+
     private:
         ros::NodeHandle                                     m_nh;
 

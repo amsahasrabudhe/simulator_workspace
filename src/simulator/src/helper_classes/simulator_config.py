@@ -18,4 +18,6 @@ class SimulatorConfig:
         self.ego_veh_image_file         = "resources/ego_veh_small.png"
         self.traffic_veh_image_file     = "resources/traffic_veh_small.png"
 
+        self.render                     = False
+
         self.display_update_duration_s  = 0.02

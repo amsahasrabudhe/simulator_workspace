@@ -35,6 +35,16 @@ void PlannerVisualizer::addVisualization()
     // Clear previous messages
     m_vis_msg->markers.clear();
 
+    addSplineLanePointsVis();
+    addLanesVis();
+    addEgoVehicleVis();
+    addTrafficVis();
+    addRoadPolygonVis();
+    addEgoPolygonVis();
+}
+
+void PlannerVisualizer::addSplineLanePointsVis()
+{
     // Add markers for current lane points used for spline generation
     for (std::size_t i = 0; i < m_overall_info->curr_poly_lanepoints.size(); ++i)
     {
@@ -66,7 +76,10 @@ void PlannerVisualizer::addVisualization()
 
         m_vis_msg->markers.push_back(point);
     }
+}
 
+void PlannerVisualizer::addLanesVis()
+{
     // Add markers for lanes visualization
     for (std::size_t i = 0; i < m_overall_info->road_info.lanes.size(); ++i)
     {
@@ -110,7 +123,10 @@ void PlannerVisualizer::addVisualization()
             m_vis_msg->markers.push_back(lane_point_marker);
         }
     }
+}
 
+void PlannerVisualizer::addEgoVehicleVis()
+{
     // Draw ego vehicle
 
     visualization_msgs::Marker vehicle;
@@ -148,7 +164,10 @@ void PlannerVisualizer::addVisualization()
     vehicle.frame_locked = true;
 
     m_vis_msg->markers.push_back(vehicle);
+}
 
+void PlannerVisualizer::addTrafficVis()
+{
     // Draw traffic vehicles
 
     for (std::size_t i = 0; i < m_overall_info->traffic.size() ; ++i)
@@ -189,6 +208,88 @@ void PlannerVisualizer::addVisualization()
 
         m_vis_msg->markers.push_back(traffic_car);
     }
+}
+
+void PlannerVisualizer::addRoadPolygonVis()
+{
+    visualization_msgs::Marker boundary;
+
+    boundary.header.stamp = ros::Time::now();
+    boundary.header.frame_id = "world_origin";
+
+    boundary.id     = 1111;
+    boundary.type   = visualization_msgs::Marker::LINE_STRIP;
+    boundary.action = visualization_msgs::Marker::ADD;
+    boundary.ns     = "road_polygon";
+
+    boundary.pose.position.z = 0.25;
+
+    boundary.scale.x = 0.1;
+
+    BoostPointList boundary_points = m_overall_info->road_info.road_polygon_points;
+    for (std::size_t i = 0; i < boundary_points.size(); ++i)
+    {
+        geometry_msgs::Point point;
+        point.x = boundary_points[i].x();
+        point.y = boundary_points[i].y();
+        point.z = 0;
+
+        boundary.points.push_back(point);
+
+        std_msgs::ColorRGBA color;
+        color.r = 1.0;
+        color.g = 1.0;
+        color.b = 1.0;
+        color.a = 1.0;
+
+        boundary.colors.push_back(color);
+    }
+
+    boundary.lifetime = ros::Duration(0.1);
+    boundary.frame_locked = true;
+
+    m_vis_msg->markers.push_back(boundary);
+}
+
+void PlannerVisualizer::addEgoPolygonVis()
+{
+    visualization_msgs::Marker boundary;
+
+    boundary.header.stamp = ros::Time::now();
+    boundary.header.frame_id = "world_origin";
+
+    boundary.id     = 1111;
+    boundary.type   = visualization_msgs::Marker::LINE_STRIP;
+    boundary.action = visualization_msgs::Marker::ADD;
+    boundary.ns     = "ego_polygon";
+
+    boundary.pose.position.z = 0.25;
+
+    boundary.scale.x = 0.3;
+
+    BoostPointList boundary_points = m_overall_info->ego_state->polygon_points;
+    for (std::size_t i = 0; i < boundary_points.size(); ++i)
+    {
+        geometry_msgs::Point point;
+        point.x = boundary_points[i].x();
+        point.y = boundary_points[i].y();
+        point.z = 0;
+
+        boundary.points.push_back(point);
+
+        std_msgs::ColorRGBA color;
+        color.r = 1.0;
+        color.g = 1.0;
+        color.b = 1.0;
+        color.a = 1.0;
+
+        boundary.colors.push_back(color);
+    }
+
+    boundary.lifetime = ros::Duration(0.1);
+    boundary.frame_locked = true;
+
+    m_vis_msg->markers.push_back(boundary);
 }
 
 }

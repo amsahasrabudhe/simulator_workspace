@@ -62,6 +62,8 @@ class Vehicle
         double steering;
         double vel;
         double accel;
+
+        BoostPointList  polygon_points;
 };
 
 }

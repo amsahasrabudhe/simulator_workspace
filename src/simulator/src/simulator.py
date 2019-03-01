@@ -27,10 +27,11 @@ class Simulator:
 
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
 
-        self.setupSimulation()
+        if self.sim_config.render:
+            self.setupSimulation()
 
-        self.ego_veh_image     = loadImage(self, self.sim_config.ego_veh_image_file)
-        self.traffic_veh_image = loadImage(self, self.sim_config.traffic_veh_image_file)
+            self.ego_veh_image     = loadImage(self, self.sim_config.ego_veh_image_file)
+            self.traffic_veh_image = loadImage(self, self.sim_config.traffic_veh_image_file)
 
         loadEnvironment(self)
 
@@ -55,6 +56,8 @@ class Simulator:
         cfg.traffic_veh_image_file     = loadParam("/simulator/traffic_veh_image_file", "resources/traffic_veh_small.png")
 
         cfg.display_update_duration_s  = loadParam("/simulator/display_update_duration_s", 0.02)
+
+        cfg.render                     = loadParam("/simulator/render", False)
 
         cfg.pixels_per_meter           = loadParam("/vehicle_description/pixels_per_meter", 14.2259)
 
@@ -129,15 +132,9 @@ class Simulator:
 
     def displayTrafficVehicles(self):
 
-        now = rospy.get_time()
-
-        updateTrafficVehiclesPositions(self, now)
-
         for veh in self.traffic:
             veh_pos = convertPosToSimCoordinates(self, veh.pose.getPosition())
             rotateAndBlitImage(self.screen, self.traffic_veh_image, veh_pos, convertToSimDegrees(veh.pose.theta))
-
-        self.publishTrafficInformation()
 
     def displayVehicleOrigin(self):
 
@@ -146,17 +143,22 @@ class Simulator:
 
     def updateDisplay(self):
 
-        checkPyGameQuit()
+        if self.sim_config.render:
+            checkPyGameQuit()
 
-        self.screen.blit(self.bg_image, (0, 0))
+        updateTrafficVehiclesPositions(self, rospy.get_time())
+        self.publishTrafficInformation()
 
-        self.displayEgoVehicle()
-        self.displayTrafficVehicles()
-        self.displayInformationText()
+        if self.sim_config.render:
+            self.screen.blit(self.bg_image, (0, 0))
 
-        self.displayVehicleOrigin()
+            self.displayEgoVehicle()
+            self.displayTrafficVehicles()
+            self.displayInformationText()
 
-        pygame.display.update()
+            self.displayVehicleOrigin()
+
+            pygame.display.update()
 
         if self.ego_veh.pose.x * self.sim_config.pixels_per_meter > 1280:
             pygame.quit()

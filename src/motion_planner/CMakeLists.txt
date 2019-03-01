@@ -80,6 +80,9 @@ set( lib_headers
 
     lib/configs/PlannerConfig.hpp
 
+    lib/helper_functions/boost_geometry_helper_functions.hpp
+    lib/helper_functions/safety_helper_functions.hpp
+
     lib/types/EgoVehicle.hpp
     lib/types/LaneInfo.hpp
     lib/types/MPInfo.hpp

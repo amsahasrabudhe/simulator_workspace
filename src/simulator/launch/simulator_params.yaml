@@ -1,13 +1,15 @@
-ego_veh_state_topic       : "/ego_veh_state"
+﻿ego_veh_state_topic       : "/ego_veh_state"
 traffic_states_topic      : "/traffic_veh_states"
 
 window_width              : 1280
 window_height             : 720
 
-env_yaml_file             : "resources/environments/two_lane_two_cars_y_inverted_meters.yaml"
+env_yaml_file             : "resources/environments/two_lane_y_inverted_meters_static_traffic.yaml"
 env_bg_image_file         : "resources/environments/two_lane_y_inverted_meters.png"
 
 ego_veh_image_file        : "resources/ego_veh_small.png"
 traffic_veh_image_file    : "resources/traffic_veh_small.png"
+
+render                    : false
 
 display_update_duration_s : 0.02
