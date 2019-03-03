@@ -19,8 +19,8 @@ class PlannerConfig
             max_accel_mpss(4.0),
             max_jerk_mpsss(1.0),
             max_steering_rad(0.698132),
-            poly_fit_degree(2),
-            poly_fit_min_lane_points(11),
+            poly_fit_degree(3),
+            poly_fit_min_lane_points(20),
             poly_fit_lane_points_behind_veh(1),
             poly_fit_speed_scale_factor(2.0),
             update_time_s(0.02)

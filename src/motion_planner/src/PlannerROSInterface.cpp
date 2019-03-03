@@ -48,20 +48,6 @@ void PlannerROSInterface::update(const ros::TimerEvent& event)
 
     updateEgoVehicleState();
 
-    /// Update boost polygon information
-    m_overall_info->ego_state->polygon_points = geometry::getVehiclePolygonPoints(*m_overall_info->ego_state);
-
-    BoostPolygon ego_polygon = geometry::getVehiclePolygonFromPoints(m_overall_info->ego_state->polygon_points);
-
-    if (boost::geometry::within( ego_polygon, m_overall_info->road_info.road_polygon ))
-    {
-        std::cout<<"INSIDE ROAD BOUNDARY"<<std::endl;
-    }
-    else
-    {
-        std::cout<<"WENT OFFROAD!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
-    }
-
     broadcastTransforms();
     publishEgoVehicleState();
 }

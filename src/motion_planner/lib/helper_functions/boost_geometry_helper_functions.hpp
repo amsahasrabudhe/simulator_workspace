@@ -5,7 +5,7 @@
 
 #include <boost/assign.hpp>
 #include <lib/types/RoadInfo.hpp>
-#include <lib/types/EgoVehicle.hpp>
+#include <lib/types/Vehicle.hpp>
 
 namespace mp
 {

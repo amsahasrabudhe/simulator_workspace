@@ -30,7 +30,7 @@ INCLUDE( MotionPlanning )
 
 #SET(CUDA_NVCC_FLAGS "-arch=sm_61" CACHE STRING "nvcc flags" FORCE)
 #SET(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
-#SET(LIB_TYPE STATIC)
+#SET(LIB_TYPE SHARED)
 
 ###################################
 ## catkin specific configuration ##
@@ -77,10 +77,12 @@ add_executable(motion_planner
 
 set( lib_headers
     lib/algorithm/NonholonomicParallelAStar.hpp
+    lib/algorithm/astar_cpu/Node.hpp
 
     lib/configs/PlannerConfig.hpp
 
     lib/helper_functions/boost_geometry_helper_functions.hpp
+    lib/helper_functions/motion_planning_helper_functions.hpp
     lib/helper_functions/safety_helper_functions.hpp
 
     lib/types/EgoVehicle.hpp
