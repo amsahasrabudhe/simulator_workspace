@@ -4,7 +4,7 @@
 #define PLANNER_ROS_INTERFACE_HPP
 
 #include "PlannerVisualizer.hpp"
-#include "lib/algorithm/NonholonomicParallelAStar.hpp"
+#include "lib/algorithm/NonholonomicAStar.hpp"
 
 #include <lib/types/OverallInfo.hpp>
 #include <lib/configs/PlannerConfig.hpp>
@@ -68,8 +68,8 @@ class PlannerROSInterface
 
         PlannerConfig                               m_config;
         std::shared_ptr<OverallInfo>                m_overall_info;
-        std::unique_ptr<NonholonomicParallelAStar>  m_parallel_mp_algo;
-        std::unique_ptr<PlannerVisualizer>          m_visualizer;
+        std::shared_ptr<NonholonomicParallelAStar>  m_parallel_mp_algo;
+        std::shared_ptr<PlannerVisualizer>          m_visualizer;
 
         ros::Time                                   m_last_update_time;
 };

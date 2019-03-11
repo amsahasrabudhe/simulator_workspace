@@ -1,9 +1,7 @@
 ﻿cmake_minimum_required(VERSION 2.8.3)
 project(motion_planner)
 
-add_compile_options(-std=c++14)
-
-#find_package(CUDA REQUIRED)
+find_package(CUDA REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 
@@ -21,16 +19,17 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 # Set the module path in which to search
-SET( CMAKE_MODULE_PATH 
+set( CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH} 
     ${CMAKE_SOURCE_DIR}/motion_planner
 )
 
-INCLUDE( MotionPlanning )
+include( MotionPlanning )
 
-#SET(CUDA_NVCC_FLAGS "-arch=sm_61" CACHE STRING "nvcc flags" FORCE)
-#SET(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
-#SET(LIB_TYPE SHARED)
+set(CMAKE_CUDA_COMPILER /usr/local/cuda-9.0/bin/nvcc)
+set(CUDA_NVCC_FLAGS "-arch=sm_61" CACHE STRING "nvcc flags" FORCE)
+set(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+set(LIB_TYPE SHARED)
 
 ###################################
 ## catkin specific configuration ##
@@ -53,6 +52,7 @@ add_custom_target(${PROJECT_NAME}_OTHER_FILES ALL WORKING_DIRECTORY ${PROJECT_SO
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${CUDA_INCLUDE_DIRS}
 )
 
 ##################################################
@@ -75,9 +75,24 @@ add_executable(motion_planner
 
 ##################################################
 
+set( cuda_lib_headers
+    lib/algorithm/parallel_cost_calculations.cuh
+)
+
+set( cuda_lib_source
+    lib/algorithm/parallel_cost_calculations.cu
+)
+
+cuda_add_library( cuda_mp ${LIB_TYPE}
+    ${cuda_lib_headers}
+    ${cuda_lib_source}
+)
+
+##################################################
+
 set( lib_headers
-    lib/algorithm/NonholonomicParallelAStar.hpp
-    lib/algorithm/astar_cpu/Node.hpp
+    lib/algorithm/NonholonomicAStar.hpp
+    lib/algorithm/astar/Node.hpp
 
     lib/configs/PlannerConfig.hpp
 
@@ -95,7 +110,7 @@ set( lib_headers
 )
 
 set( lib_source
-    lib/algorithm/NonholonomicParallelAStar.cpp
+    lib/algorithm/NonholonomicAStar.cpp
 )
 
 add_library( parallel_mp
@@ -103,13 +118,20 @@ add_library( parallel_mp
     ${lib_source}
 )
 
+target_link_libraries(parallel_mp
+    cuda_mp
+)
+
 ##################################################
 
 set( libraries
     ${Boost_LIBRARIES}
     ${catkin_LIBRARIES}
+    ${CUDA_LIBRARIES}
     parallel_mp
 )
+
+add_dependencies(motion_planner cuda_mp parallel_mp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion_planner
@@ -128,6 +150,12 @@ install( TARGETS motion_planner
  )
 
 install( TARGETS parallel_mp
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
+
+install( TARGETS cuda_mp
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

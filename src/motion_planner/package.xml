@@ -10,7 +10,6 @@
 
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>libraries_builder</build_depend>
   <depend>message_runtime</depend>
   <depend>roscpp</depend>
   <depend>roslaunch</depend>

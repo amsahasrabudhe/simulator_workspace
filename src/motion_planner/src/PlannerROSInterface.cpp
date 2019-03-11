@@ -26,10 +26,10 @@ void PlannerROSInterface::initialize()
 
     setupEgoVehicle();
 
-    m_parallel_mp_algo = std::make_unique<NonholonomicParallelAStar>(m_overall_info, m_config);
+    m_parallel_mp_algo = std::make_shared<NonholonomicParallelAStar>(m_overall_info, m_config);
     m_parallel_mp_algo->initialize();
 
-    m_visualizer = std::make_unique<PlannerVisualizer>(m_nh, m_overall_info, m_config);
+    m_visualizer = std::make_shared<PlannerVisualizer>(m_nh, m_overall_info, m_config);
     m_visualizer->initialize();
 
     m_ego_state_pub = m_nh.advertise<simulator_msgs::EgoVehicle>(m_config.ego_veh_state_out_topic, 1, false);
