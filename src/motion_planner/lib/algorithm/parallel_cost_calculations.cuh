@@ -8,5 +8,5 @@
 
 namespace cuda_mp
 {
-    void calculateCost();
+    void calculateCost(const mp::Node* node);
 }

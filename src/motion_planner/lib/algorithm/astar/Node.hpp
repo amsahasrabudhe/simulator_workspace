@@ -13,15 +13,22 @@ namespace mp
 class Node
 {
     public:     /// functions
-        Node():
-            steering(0.0),
-            vel(0.0),
-            accel(0.0),
+        Node(const double& x = 0.0, const double& y = 0.0, const double& theta = 0.0,
+             const double& steering = 0.0, const double& vel = 0.0, const double& accel = 0.0):
+            pose(Pose2D(x, y, theta)),
+            steering(steering),
+            vel(vel),
+            accel(accel),
             gx(0.0),
             hx(0.0),
             parent(nullptr)
         {
 
+        }
+
+        void setParent(Node* parent)
+        {
+            this->parent = parent;
         }
 
     public:     /// variables

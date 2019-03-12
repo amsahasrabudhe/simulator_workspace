@@ -4,6 +4,10 @@
 #define BOOST_GEOMETRY_HELPER_FUNCTIONS_HPP
 
 #include <boost/assign.hpp>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
+
 #include <lib/types/RoadInfo.hpp>
 #include <lib/types/Vehicle.hpp>
 
@@ -13,7 +17,7 @@ namespace mp
 namespace geometry
 {
 
-BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
+__host__ __device__ BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
 {
     BoostPolygon    road_polygon;
     BoostPointList  road_polygon_points;
@@ -49,7 +53,7 @@ BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
     return road_polygon_points;
 }
 
-BoostPolygon getRoadPolygon( const RoadInfo& road_info )
+__host__ __device__ BoostPolygon getRoadPolygon( const RoadInfo& road_info )
 {
     BoostPointList road_polygon_points = getRoadPolygonPoints(road_info);
 
@@ -60,7 +64,7 @@ BoostPolygon getRoadPolygon( const RoadInfo& road_info )
     return road_polygon;
 }
 
-BoostPointList getVehiclePolygonPoints( const Vehicle& vehicle )
+__host__ __device__ BoostPointList getVehiclePolygonPoints( const Vehicle& vehicle )
 {
     BoostPointList veh_polygon_points;
 
@@ -85,7 +89,7 @@ BoostPointList getVehiclePolygonPoints( const Vehicle& vehicle )
     return veh_polygon_points;
 }
 
-BoostPolygon getVehiclePolygonFromPoints( const BoostPointList& point_list )
+__host__ __device__ BoostPolygon getVehiclePolygonFromPoints( const BoostPointList& point_list )
 {
     // Assign vehicle corner points to vehicle polygon
     BoostPolygon vehicle_polygon;

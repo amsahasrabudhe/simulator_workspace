@@ -3,6 +3,9 @@
 #ifndef SAFETY_HELPER_FUNCTIONS_HPP
 #define SAFETY_HELPER_FUNCTIONS_HPP
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <curand_kernel.h>
 #include <string>
 
 #include "boost_geometry_helper_functions.hpp"
@@ -13,7 +16,7 @@ namespace mp
 namespace safety
 {
 
-bool isWithinRoadBoundaries(const BoostPolygon& ego_polygon, const RoadInfo& road_info)
+__host__ __device__ bool isWithinRoadBoundaries(const BoostPolygon& ego_polygon, const RoadInfo& road_info)
 {
     if( boost::geometry::within(ego_polygon, road_info.road_polygon) )
     {
@@ -23,7 +26,7 @@ bool isWithinRoadBoundaries(const BoostPolygon& ego_polygon, const RoadInfo& roa
     return false;
 }
 
-bool isCollisionState(const BoostPolygon& ego_polygon, const Vehicle& traffic_veh_state)
+__host__ __device__ bool isCollisionState(const BoostPolygon& ego_polygon, const Vehicle& traffic_veh_state)
 {
     BoostPolygon traffic_veh_polygon = geometry::getVehiclePolygonFromPoints(traffic_veh_state.polygon_points);
 

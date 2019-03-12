@@ -1,7 +1,7 @@
 ﻿/// @file This file contains Host code for CUDA based parallel Motion planning algorithm
 
-#ifndef NONHOLONOMIC_PARALLEL_ASTAR_HPP
-#define NONHOLONOMIC_PARALLEL_ASTAR_HPP
+#ifndef NONHOLONOMIC_ASTAR_HPP
+#define NONHOLONOMIC_ASTAR_HPP
 
 #include <eigen3/unsupported/Eigen/Splines>
 #include <iostream>
@@ -13,12 +13,12 @@
 namespace mp
 {
 
-class NonholonomicParallelAStar
+class NonholonomicAStar
 {
     public:     /// functions
 
         /// @brief
-        NonholonomicParallelAStar(const std::shared_ptr<OverallInfo>& overall_info, const PlannerConfig& cfg);
+        NonholonomicAStar(const std::shared_ptr<OverallInfo>& overall_info, const PlannerConfig& cfg);
 
         /// @brief
         void initialize();

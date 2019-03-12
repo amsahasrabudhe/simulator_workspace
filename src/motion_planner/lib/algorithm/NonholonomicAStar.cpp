@@ -5,22 +5,22 @@
 namespace mp
 {
 
-NonholonomicParallelAStar::NonholonomicParallelAStar(const std::shared_ptr<OverallInfo>& overall_info, const PlannerConfig& cfg):
+NonholonomicAStar::NonholonomicAStar(const std::shared_ptr<OverallInfo>& overall_info, const PlannerConfig& cfg):
     m_overall_info(overall_info),
     m_cfg(cfg)
 {
 
 }
 
-void NonholonomicParallelAStar::initialize()
+void NonholonomicAStar::initialize()
 {
-    cuda_mp::calculateCost();
+    cuda_mp::calculateCost(new Node());
 
     // Find current lane
     localize( m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first );
 }
 
-void NonholonomicParallelAStar::update()
+void NonholonomicAStar::update()
 {
     // Get Lane points based on localization information
     m_overall_info->curr_poly_lanepoints = getLanePointsForPolyFit();
@@ -30,7 +30,7 @@ void NonholonomicParallelAStar::update()
 
 }
 
-void NonholonomicParallelAStar::localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index)
+void NonholonomicAStar::localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index)
 {
     std::size_t curr_lane = 0;
     std::pair<std::uint32_t, Pose2D> nearest_lane_point;
@@ -67,7 +67,7 @@ void NonholonomicParallelAStar::localize(const std::size_t& known_current_lane, 
     m_overall_info->nearest_lane_point_with_index = nearest_lane_point;
 }
 
-std::vector<Pose2D> NonholonomicParallelAStar::getLanePointsForPolyFit()
+std::vector<Pose2D> NonholonomicAStar::getLanePointsForPolyFit()
 {
     /// Get nearest lane point and lane id
     localize(m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first);
@@ -92,7 +92,7 @@ std::vector<Pose2D> NonholonomicParallelAStar::getLanePointsForPolyFit()
     return points;
 }
 
-Eigen::Spline3d NonholonomicParallelAStar::getSpline( const std::vector<Pose2D>& points )
+Eigen::Spline3d NonholonomicAStar::getSpline( const std::vector<Pose2D>& points )
 {
     Eigen::Vector3d spline_points( points.size() );
 

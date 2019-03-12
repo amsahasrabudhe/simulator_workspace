@@ -3,12 +3,13 @@
 namespace cuda_mp
 {
 
-__global__ void calculate_cost(void)
+__global__
+void calculate_cost()
 {
-    printf("\n Thread id printing from GPU: %d", threadIdx.x);
+    printf("\n Thread id printing from GPU: %d ", threadIdx.x);
 }
 
-void calculateCost()
+void calculateCost(const mp::Node* node)
 {
     calculate_cost <<<2,2>>> ();
 }
