@@ -1,6 +1,9 @@
 ﻿cmake_minimum_required(VERSION 2.8.3)
 project(motion_planner)
 
+set(CXX g++-4.9)
+set(C gcc-4.9)
+
 find_package(CUDA REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)

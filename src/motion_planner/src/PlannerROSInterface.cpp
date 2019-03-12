@@ -128,7 +128,7 @@ void PlannerROSInterface::updateEgoVehicleState()
     m_overall_info->ego_state->pose.x += dt * curr_vel * cos(curr_theta);
     m_overall_info->ego_state->pose.y += dt * curr_vel * sin(curr_theta);
 
-    m_overall_info->ego_state->pose.theta = curr_theta + dt * (curr_vel/m_overall_info->ego_state->wheel_base)*tan(m_overall_info->ego_state->steering);
+    m_overall_info->ego_state->pose.theta = curr_theta + dt * (curr_vel/m_config.wheel_base)*tan(m_overall_info->ego_state->steering);
     
     m_overall_info->ego_state->vel += dt * m_overall_info->ego_state->accel;
 }

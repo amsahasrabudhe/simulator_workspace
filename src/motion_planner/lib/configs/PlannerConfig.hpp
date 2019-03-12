@@ -12,6 +12,8 @@ class PlannerConfig
 {
     public:     /// functions
         PlannerConfig():
+            wheel_base(2.81),
+            height(1.451),
             ego_veh_state_out_topic("/ego_veh_state"),
             traffic_veh_states_in_topic("/traffic_veh_states"),
             visualization_topic("/planner/visualization"),
@@ -29,6 +31,10 @@ class PlannerConfig
         }
 
     public:
+
+        /// Vehicle dimension
+        double wheel_base;
+        double height;
 
         /// Topic configs
         std::string     ego_veh_state_out_topic;        ///< Topic name to publish ego vehicle state

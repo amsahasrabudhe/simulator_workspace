@@ -1,5 +1,6 @@
 ﻿
-#include "NonholonomicParallelAStar.hpp"
+#include "NonholonomicAStar.hpp"
+#include "parallel_cost_calculations.cuh"
 
 namespace mp
 {
@@ -13,6 +14,8 @@ NonholonomicParallelAStar::NonholonomicParallelAStar(const std::shared_ptr<Overa
 
 void NonholonomicParallelAStar::initialize()
 {
+    cuda_mp::calculateCost();
+
     // Find current lane
     localize( m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first );
 }

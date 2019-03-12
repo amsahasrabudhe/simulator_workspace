@@ -139,9 +139,9 @@ void PlannerVisualizer::addEgoVehicleVis()
     vehicle.action = visualization_msgs::Marker::ADD;
     vehicle.ns     = "ego_vehicle";
 
-    vehicle.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.theta) * m_overall_info->ego_state->wheel_base/2;
-    vehicle.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.theta) * m_overall_info->ego_state->wheel_base/2;
-    vehicle.pose.position.z = m_overall_info->ego_state->height / 2;
+    vehicle.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.theta) * m_cfg.wheel_base/2;
+    vehicle.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.theta) * m_cfg.wheel_base/2;
+    vehicle.pose.position.z = m_cfg.height / 2;
 
     tf2::Quaternion q;
     q.setRPY(0, 0, m_overall_info->ego_state->pose.theta);
@@ -153,7 +153,7 @@ void PlannerVisualizer::addEgoVehicleVis()
 
     vehicle.scale.x = m_overall_info->ego_state->length;
     vehicle.scale.y = m_overall_info->ego_state->width;
-    vehicle.scale.z = m_overall_info->ego_state->height;
+    vehicle.scale.z = m_cfg.height;
 
     vehicle.color.r = 1.0;
     vehicle.color.g = 0.0;
@@ -182,9 +182,9 @@ void PlannerVisualizer::addTrafficVis()
         traffic_car.action = visualization_msgs::Marker::ADD;
         traffic_car.ns     = "traffic";
 
-        traffic_car.pose.position.x = m_overall_info->traffic[i].pose.x + cos(m_overall_info->traffic[i].pose.theta) * m_overall_info->traffic[i].wheel_base/2;
-        traffic_car.pose.position.y = m_overall_info->traffic[i].pose.y + sin(m_overall_info->traffic[i].pose.theta) * m_overall_info->traffic[i].wheel_base/2;
-        traffic_car.pose.position.z = m_overall_info->traffic[i].height / 2;
+        traffic_car.pose.position.x = m_overall_info->traffic[i].pose.x + cos(m_overall_info->traffic[i].pose.theta) * m_cfg.wheel_base/2;
+        traffic_car.pose.position.y = m_overall_info->traffic[i].pose.y + sin(m_overall_info->traffic[i].pose.theta) * m_cfg.wheel_base/2;
+        traffic_car.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
         q.setRPY(0, 0, m_overall_info->traffic[i].pose.theta);
@@ -196,7 +196,7 @@ void PlannerVisualizer::addTrafficVis()
 
         traffic_car.scale.x = m_overall_info->traffic[i].length;
         traffic_car.scale.y = m_overall_info->traffic[i].width;
-        traffic_car.scale.z = m_overall_info->traffic[i].height;
+        traffic_car.scale.z = m_cfg.height;
 
         traffic_car.color.r = 0.2f;
         traffic_car.color.g = 0.7f;
