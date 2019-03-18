@@ -26,6 +26,7 @@ std::vector<Node> getChildNodes(Node* parent, const PlannerConfig& config)
 
         /// Add steering change to update steering angle for each child node
         double curr_steering = parent->steering + steering_change;
+        child.steering = curr_steering;
 
         double beta = dt * curr_vel * tan(curr_steering) / config.wheel_base;
         double R = dt * curr_vel / beta;
