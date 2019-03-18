@@ -14,7 +14,10 @@ NonholonomicAStar::NonholonomicAStar(const std::shared_ptr<OverallInfo>& overall
 
 void NonholonomicAStar::initialize()
 {
-    cuda_mp::calculateCost(new Node());
+    mp::EgoVehicle ego = *m_overall_info->ego_state;
+    Node *node = new Node(ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
+
+    cuda_mp::calculateCost(node, m_cfg);
 
     // Find current lane
     localize( m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first );

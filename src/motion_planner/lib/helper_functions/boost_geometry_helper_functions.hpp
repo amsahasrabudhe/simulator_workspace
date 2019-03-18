@@ -17,7 +17,7 @@ namespace mp
 namespace geometry
 {
 
-__host__ __device__ BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
+BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
 {
     BoostPolygon    road_polygon;
     BoostPointList  road_polygon_points;
@@ -53,7 +53,7 @@ __host__ __device__ BoostPointList getRoadPolygonPoints( const RoadInfo& road_in
     return road_polygon_points;
 }
 
-__host__ __device__ BoostPolygon getRoadPolygon( const RoadInfo& road_info )
+BoostPolygon getRoadPolygon( const RoadInfo& road_info )
 {
     BoostPointList road_polygon_points = getRoadPolygonPoints(road_info);
 
@@ -64,7 +64,7 @@ __host__ __device__ BoostPolygon getRoadPolygon( const RoadInfo& road_info )
     return road_polygon;
 }
 
-__host__ __device__ BoostPointList getVehiclePolygonPoints( const Vehicle& vehicle )
+BoostPointList getVehiclePolygonPoints( const Vehicle& vehicle )
 {
     BoostPointList veh_polygon_points;
 
@@ -89,7 +89,7 @@ __host__ __device__ BoostPointList getVehiclePolygonPoints( const Vehicle& vehic
     return veh_polygon_points;
 }
 
-__host__ __device__ BoostPolygon getVehiclePolygonFromPoints( const BoostPointList& point_list )
+BoostPolygon getVehiclePolygonFromPoints( const BoostPointList& point_list )
 {
     // Assign vehicle corner points to vehicle polygon
     BoostPolygon vehicle_polygon;

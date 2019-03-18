@@ -16,7 +16,7 @@ namespace mp
 namespace safety
 {
 
-__host__ __device__ bool isWithinRoadBoundaries(const BoostPolygon& ego_polygon, const RoadInfo& road_info)
+bool isWithinRoadBoundaries(const BoostPolygon& ego_polygon, const RoadInfo& road_info)
 {
     if( boost::geometry::within(ego_polygon, road_info.road_polygon) )
     {
@@ -26,7 +26,7 @@ __host__ __device__ bool isWithinRoadBoundaries(const BoostPolygon& ego_polygon,
     return false;
 }
 
-__host__ __device__ bool isCollisionState(const BoostPolygon& ego_polygon, const Vehicle& traffic_veh_state)
+bool isCollisionState(const BoostPolygon& ego_polygon, const Vehicle& traffic_veh_state)
 {
     BoostPolygon traffic_veh_polygon = geometry::getVehiclePolygonFromPoints(traffic_veh_state.polygon_points);
 

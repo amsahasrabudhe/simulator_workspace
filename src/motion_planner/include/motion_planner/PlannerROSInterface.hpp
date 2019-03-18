@@ -68,7 +68,7 @@ class PlannerROSInterface
 
         PlannerConfig                               m_config;
         std::shared_ptr<OverallInfo>                m_overall_info;
-        std::shared_ptr<NonholonomicParallelAStar>  m_parallel_mp_algo;
+        std::shared_ptr<NonholonomicAStar>          m_parallel_mp_algo;
         std::shared_ptr<PlannerVisualizer>          m_visualizer;
 
         ros::Time                                   m_last_update_time;

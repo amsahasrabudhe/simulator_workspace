@@ -26,7 +26,7 @@ void PlannerROSInterface::initialize()
 
     setupEgoVehicle();
 
-    m_parallel_mp_algo = std::make_shared<NonholonomicParallelAStar>(m_overall_info, m_config);
+    m_parallel_mp_algo = std::make_shared<NonholonomicAStar>(m_overall_info, m_config);
     m_parallel_mp_algo->initialize();
 
     m_visualizer = std::make_shared<PlannerVisualizer>(m_nh, m_overall_info, m_config);
@@ -110,8 +110,8 @@ void PlannerROSInterface::setupEgoVehicle()
 
     m_overall_info->ego_state->setPose(init_x, init_y, init_theta);
     
-    m_overall_info->ego_state->setVel(1.5);
-    m_overall_info->ego_state->setAccel(0.01);
+    m_overall_info->ego_state->setVel(2.0);
+    m_overall_info->ego_state->setAccel(0);
     m_overall_info->ego_state->setSteeringAngle(0);
 }
 
@@ -123,12 +123,24 @@ void PlannerROSInterface::updateEgoVehicleState()
     m_last_update_time = now;
 
     double curr_theta = m_overall_info->ego_state->pose.theta;
+    double curr_steering = m_overall_info->ego_state->steering;
     double curr_vel = m_overall_info->ego_state->vel;
 
-    m_overall_info->ego_state->pose.x += dt * curr_vel * cos(curr_theta);
-    m_overall_info->ego_state->pose.y += dt * curr_vel * sin(curr_theta);
+    double beta = dt * curr_vel * tan(curr_steering) / m_config.wheel_base;
+    double R = dt * curr_vel / beta;
 
-    m_overall_info->ego_state->pose.theta = curr_theta + dt * (curr_vel/m_config.wheel_base)*tan(m_overall_info->ego_state->steering);
+    if (beta > 0.001)
+    {
+        m_overall_info->ego_state->pose.x += (sin(curr_theta+beta) - sin(curr_theta))*R;
+        m_overall_info->ego_state->pose.y += (cos(curr_theta) - cos(curr_theta+beta))*R;
+        m_overall_info->ego_state->pose.theta = fmod ((curr_theta+beta), 2*M_PI);
+    }
+    else
+    {
+        m_overall_info->ego_state->pose.x += dt * curr_vel * cos(curr_theta);
+        m_overall_info->ego_state->pose.y += dt * curr_vel * sin(curr_theta);
+        m_overall_info->ego_state->pose.theta = fmod ((curr_theta+beta), 2*M_PI);
+    }
     
     m_overall_info->ego_state->vel += dt * m_overall_info->ego_state->accel;
 }

@@ -5,8 +5,9 @@
 #include <curand_kernel.h>
 
 #include "astar/Node.hpp"
+#include "lib/helper_functions/motion_planning_helper_functions.hpp"
 
 namespace cuda_mp
 {
-    void calculateCost(const mp::Node* node);
+    void calculateCost(mp::Node* node, const mp::PlannerConfig& config);
 }
