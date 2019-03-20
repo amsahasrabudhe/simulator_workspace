@@ -31,7 +31,7 @@ std::vector<Node> getChildNodes(Node* parent, const PlannerConfig& config)
         double beta = dt * curr_vel * tan(curr_steering) / config.wheel_base;
         double R = dt * curr_vel / beta;
 
-        if (beta > 0.001)
+        if (fabs(beta) > 0.001)
         {
             child.pose.x = parent->pose.x + (sin(curr_theta+beta) - sin(curr_theta))*R;
             child.pose.y = parent->pose.y + (cos(curr_theta) - cos(curr_theta+beta))*R;
