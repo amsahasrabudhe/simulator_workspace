@@ -19,13 +19,13 @@ std::vector<Node> getChildNodes(Node* parent, const PlannerConfig& config)
         mp::Node child;
         child.setParent(parent);
 
-        double dt = 0.1;    ///< seconds
+        double dt = 2;    ///< seconds
 
         double curr_theta = parent->pose.theta;
         double curr_vel = parent->vel;
 
         /// Add steering change to update steering angle for each child node
-        double curr_steering = parent->steering + steering_change;
+        double curr_steering = parent->steering + steering_change*toRadians;
         child.steering = curr_steering;
 
         double beta = dt * curr_vel * tan(curr_steering) / config.wheel_base;

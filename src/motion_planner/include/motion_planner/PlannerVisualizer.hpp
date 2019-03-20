@@ -35,6 +35,8 @@ class PlannerVisualizer
         void addRoadPolygonVis();
         void addEgoPolygonVis();
 
+        void addCurrChildNodesVis();
+
     private:
         ros::NodeHandle                                     m_nh;
 

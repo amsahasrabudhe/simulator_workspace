@@ -14,11 +14,6 @@ NonholonomicAStar::NonholonomicAStar(const std::shared_ptr<OverallInfo>& overall
 
 void NonholonomicAStar::initialize()
 {
-    mp::EgoVehicle ego = *m_overall_info->ego_state;
-    Node *node = new Node(ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
-
-    cuda_mp::calculateCost(node, m_cfg);
-
     // Find current lane
     localize( m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first );
 }
@@ -31,6 +26,12 @@ void NonholonomicAStar::update()
     // Fit spline for given lane points
     m_overall_info->lane_center_spline = getSpline( m_overall_info->curr_poly_lanepoints );
 
+    mp::EgoVehicle ego = *m_overall_info->ego_state;
+    Node *node = new Node(ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
+
+    std::vector<mp::Node> child_nodes = mp::getChildNodes(node, m_cfg);
+
+    cuda_mp::calculateCost(child_nodes, m_cfg, m_overall_info);
 }
 
 void NonholonomicAStar::localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index)

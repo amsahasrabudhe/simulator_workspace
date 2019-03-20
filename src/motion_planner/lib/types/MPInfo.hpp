@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "lib/algorithm/astar/Node.hpp"
+
 namespace mp
 {
 
@@ -31,6 +33,9 @@ class MPInfo
         /// Safety variables
         bool        within_road_boaundaries;
         bool        collision_state;
+
+        /// Algorithm variables
+        std::vector<Node> curr_eval_nodes;      /// Child nodes evaluated in the latest cycle
 };
 
 }

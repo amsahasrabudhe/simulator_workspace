@@ -134,7 +134,7 @@ set( libraries
     parallel_mp
 )
 
-add_dependencies(motion_planner cuda_mp parallel_mp)
+add_dependencies(motion_planner parallel_mp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion_planner

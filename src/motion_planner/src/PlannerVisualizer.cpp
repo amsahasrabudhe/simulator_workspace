@@ -41,6 +41,8 @@ void PlannerVisualizer::addVisualization()
     addTrafficVis();
     addRoadPolygonVis();
     addEgoPolygonVis();
+
+    addCurrChildNodesVis();
 }
 
 void PlannerVisualizer::addSplineLanePointsVis()
@@ -169,7 +171,6 @@ void PlannerVisualizer::addEgoVehicleVis()
 void PlannerVisualizer::addTrafficVis()
 {
     // Draw traffic vehicles
-
     for (std::size_t i = 0; i < m_overall_info->traffic.size() ; ++i)
     {
         visualization_msgs::Marker traffic_car;
@@ -290,6 +291,49 @@ void PlannerVisualizer::addEgoPolygonVis()
     boundary.frame_locked = true;
 
     m_vis_msg->markers.push_back(boundary);
+}
+
+void PlannerVisualizer::addCurrChildNodesVis()
+{
+    // Draw child nodes evaulated in the recent update cycle
+    for (std::size_t i = 0; i < m_overall_info->mp_info.curr_eval_nodes.size() ; ++i)
+    {
+        visualization_msgs::Marker child_node;
+
+        child_node.header.stamp = ros::Time::now();
+        child_node.header.frame_id = "world_origin";
+
+        child_node.id     = 2000 + static_cast<int>(i);
+        child_node.type   = visualization_msgs::Marker::CUBE;
+        child_node.action = visualization_msgs::Marker::ADD;
+        child_node.ns     = "curr_child_nodes";
+
+        child_node.pose.position.x = m_overall_info->mp_info.curr_eval_nodes[i].pose.x + cos(m_overall_info->mp_info.curr_eval_nodes[i].pose.theta) * m_cfg.wheel_base/2;
+        child_node.pose.position.y = m_overall_info->mp_info.curr_eval_nodes[i].pose.y + sin(m_overall_info->mp_info.curr_eval_nodes[i].pose.theta) * m_cfg.wheel_base/2;
+        child_node.pose.position.z = m_cfg.height / 2;
+
+        tf2::Quaternion q;
+        q.setRPY(0, 0, m_overall_info->mp_info.curr_eval_nodes[i].pose.theta);
+
+        child_node.pose.orientation.x = q.x();
+        child_node.pose.orientation.y = q.y();
+        child_node.pose.orientation.z = q.z();
+        child_node.pose.orientation.w = q.w();
+
+        child_node.scale.x = m_overall_info->ego_state->length;
+        child_node.scale.y = m_overall_info->ego_state->width;
+        child_node.scale.z = 0.1/*m_cfg.height*/;
+
+        child_node.color.r = 1.0;
+        child_node.color.g = 0.3f * (i+1);
+        child_node.color.b = 0.3f * (i-1);
+        child_node.color.a = 0.7f;
+
+        child_node.lifetime = ros::Duration(0.1);
+        child_node.frame_locked = true;
+
+        m_vis_msg->markers.push_back(child_node);
+    }
 }
 
 }
