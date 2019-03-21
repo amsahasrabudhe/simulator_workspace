@@ -23,9 +23,21 @@ void NonholonomicAStar::update()
     // Get Lane points based on localization information
     m_overall_info->curr_poly_lanepoints = getLanePointsForPolyFit();
 
-    // Fit spline for given lane points
-    m_overall_info->lane_center_spline = getSpline( m_overall_info->curr_poly_lanepoints );
+//    // Fit spline for given lane points
+//    m_overall_info->lane_center_spline = getSpline( m_overall_info->curr_poly_lanepoints );
 
+    // Call the actual planner function
+    planPath ();
+}
+
+void NonholonomicAStar::planPath()
+{
+    // Clear contents of all vectors and queues from previous cycle
+    m_priority_queue = std::priority_queue<Node>();
+    m_open_list.clear();
+    m_closed_list.clear();
+
+    // Create node for the current state of ego vehicle
     mp::EgoVehicle ego = *m_overall_info->ego_state;
     Node *node = new Node(ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
 
@@ -33,6 +45,17 @@ void NonholonomicAStar::update()
 
     cuda_mp::calculateCost(child_nodes, m_cfg, m_overall_info);
 }
+
+void NonholonomicAStar::addToOpenList (const Node& node)
+{
+
+}
+
+void NonholonomicAStar::addToClosedList (const Node& node)
+{
+
+}
+
 
 void NonholonomicAStar::localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index)
 {

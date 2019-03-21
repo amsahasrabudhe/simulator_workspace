@@ -31,6 +31,21 @@ class Node
             this->parent = parent;
         }
 
+        bool operator< (const Node& other) const
+        {
+            return (gx+hx) < (other.gx + other.hx);
+        }
+
+        bool operator== (const Node& other) const
+        {
+            if (pose == other.pose)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
     public:     /// variables
 
         Pose2D pose;

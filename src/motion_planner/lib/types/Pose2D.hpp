@@ -51,6 +51,18 @@ class Pose2D
             return Pose2D(this->x/factor, this->y/factor, this->theta/factor);
         }
 
+        bool operator== (const Pose2D& other) const
+        {
+            if (x - other.x < 0.001 &&
+                y - other.y < 0.001 &&
+                theta - other.theta < 0.001)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         double distFrom(const Pose2D other)
         {
             return pow((pow((x - other.x), 2) + pow((y - other.y), 2)), 0.5);

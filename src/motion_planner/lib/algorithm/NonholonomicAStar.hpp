@@ -5,6 +5,7 @@
 
 #include <eigen3/unsupported/Eigen/Splines>
 #include <iostream>
+#include <queue>
 #include <string>
 
 #include "lib/configs/PlannerConfig.hpp"
@@ -29,6 +30,15 @@ class NonholonomicAStar
     private:
 
         /// @brief
+        void planPath();
+
+        /// @brief
+        void addToOpenList(const Node& node);
+
+        /// @brief
+        void addToClosedList(const Node& node);
+
+        /// @brief
         void localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index);
 
         /// @brief
@@ -40,8 +50,11 @@ class NonholonomicAStar
     private:     /// variables
 
         std::shared_ptr<OverallInfo>    m_overall_info;
-
         PlannerConfig                   m_cfg;
+
+        std::priority_queue<Node>       m_priority_queue;
+        std::vector<Node>               m_open_list;
+        std::vector<Node>               m_closed_list;
 };
 
 }
