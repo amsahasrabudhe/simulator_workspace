@@ -3,6 +3,8 @@
 #ifndef POSE_2D_HPP
 #define POSE_2D_HPP
 
+#include "Vec2D.hpp"
+
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
@@ -71,6 +73,15 @@ class Pose2D
         BoostPoint getBoostPoint()
         {
             return BoostPoint(x, y);
+        }
+
+        Vec2D getVec2d()
+        {
+            Vec2D vec;
+            vec.x = x;
+            vec.y = y;
+
+            return vec;
         }
 
         std::string toString()
