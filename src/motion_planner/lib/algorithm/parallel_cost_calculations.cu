@@ -3,6 +3,71 @@
 namespace cuda_mp
 {
 
+/**********************************DEVICE FUNCTIONS***************************************/
+
+__device__
+double Angle2D(double x1, double y1, double x2, double y2)
+{
+   double theta_1, theta_2;
+   double dtheta;
+
+   theta_1 = atan2(y1,x1);
+   theta_2 = atan2(y2,x2);
+
+   dtheta = theta_2 - theta_1;
+
+   while (dtheta > M_PI)
+      dtheta -= 2*M_PI;
+
+   while (dtheta < -M_PI)
+      dtheta += 2*M_PI;
+
+   return(dtheta);
+}
+
+__device__
+bool isPointInsidePolygon(const mp::Vec2D& point, const mp::Vec2D* polygon, const uint polygon_point_count)
+{
+    double angle = 0.0;
+
+    mp::Vec2D p1, p2;
+
+    for (uint i = 0; i < polygon_point_count; ++i)
+    {
+        p1.x = polygon[i].x - point.x;
+        p1.y = polygon[i].y - point.y;
+
+        p2.x = polygon[(i+1)%polygon_point_count].x - point.x;
+        p2.y = polygon[(i+1)%polygon_point_count].y - point.y;
+
+        angle += Angle2D (p1.x, p1.y, p2.x, p2.y);
+    }
+
+    if (fabs(angle) < M_PI)
+        return false;
+
+    return true;
+}
+
+__device__
+bool isNodeInsideRoad(const mp::Vec2D* child_node_polygon_points, const mp::Vec2D* road_polygon, const uint road_polygon_point_count)
+{
+    bool inside = true;
+
+    for (uint i=0; i < 4; ++i)
+    {
+        inside = isPointInsidePolygon (child_node_polygon_points[i], road_polygon, road_polygon_point_count);
+
+        // Exit loop if even one point is outside the road polygon
+        if (!inside)
+        {
+            break;
+        }
+    }
+
+    return inside;
+}
+
 __device__
 void calculateVehiclePolygon(const mp::Node& node, mp::Vec2D* veh_polygon_points)
 {
@@ -32,66 +97,122 @@ void calculateVehiclePolygon(const mp::Node& node, mp::Vec2D* veh_polygon_points
     veh_polygon_points[1] = front_left;
     veh_polygon_points[2] = front_right;
     veh_polygon_points[3] = rear_right;
-    veh_polygon_points[4] = rear_left;
 }
 
-__device__
-bool isPointInsidePolygon(mp::Vec2D* polygon, const mp::Node& node, const mp::Vec2D& point)
-{
-    calculateVehiclePolygon(node, polygon);
 
-
-
-    return true;
-}
 
 __global__
-void calculate_cost(mp::Node* device_node_array)
+void calculate_cost(mp::Node* device_child_node_array,
+                    mp::Vec2D* road_polygon, const uint road_polygon_point_count)
 {
-    printf("\n Theta: %f, Pose: %f , %f ", device_node_array[threadIdx.x].pose.theta, device_node_array[threadIdx.x].pose.x, device_node_array[threadIdx.x].pose.y);
+//    printf("\n Theta: %f, Pose: %f , %f ", device_node_array[threadIdx.x].pose.theta, device_node_array[threadIdx.x].pose.x, device_node_array[threadIdx.x].pose.y);
 
-    mp::Vec2D polygon[5];
+    mp::Vec2D child_node_polygon_points[4];
+    calculateVehiclePolygon( device_child_node_array[threadIdx.x], child_node_polygon_points );
 
-    mp::Vec2D test;
-    test.x = 25.0;
-    test.y = 25.0;
+    bool inside_road_boundary = isNodeInsideRoad(child_node_polygon_points, road_polygon, road_polygon_point_count);
 
-    isPointInsidePolygon (polygon, device_node_array[threadIdx.x], test);
+
+}
+
+/***********************************HOST FUNCTIONS****************************************/
+
+void checkCudaError(const std::string& error_msg)
+{
+    if (cudaGetLastError () != cudaSuccess)
+        std::cout<<error_msg<<std::endl;
 }
 
 void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& config, const std::shared_ptr<mp::OverallInfo>& overall_info)
 {
-    //convert to vector to array
-    mp::Node* host_node_array = child_nodes.data();
+    //convert to child node vector to array
+    mp::Node* host_child_node_array = child_nodes.data();
 
-    uint nodeSize = sizeof (child_nodes[0]);
-    uint totalNodes = child_nodes.size();
-    uint totalNodesSize = totalNodes * nodeSize;
+    uint totalChildNodes = child_nodes.size();
+    uint totalChildNodesSize = totalChildNodes * sizeof(mp::Node);
 
-    mp::Node* device_node_array;
+    mp::Node* device_child_node_array;
 
-    cudaMalloc ((void**)&device_node_array, totalNodesSize);
-    if (cudaGetLastError () != cudaSuccess)
-        std::cout<<"Node array cudaMalloc booommm!!!!"<<std::endl;
+    cudaMalloc ((void**)&device_child_node_array, totalChildNodesSize);
+    checkCudaError ( "Node array cudaMalloc booommm!!!!" );
 
-    cudaMemcpy (device_node_array, host_node_array, totalNodesSize, cudaMemcpyHostToDevice);
-    if (cudaGetLastError () != cudaSuccess)
-        std::cout<<"Node array memCopy booommm!!!!"<<std::endl;
+    cudaMemcpy (device_child_node_array, host_child_node_array, totalChildNodesSize, cudaMemcpyHostToDevice);
+    checkCudaError ( "Node array memCopy booommm!!!!" );
 
-    calculate_cost <<<1,child_nodes.size()>>> (device_node_array);
+    // Convert road polygon to array
+    std::vector<mp::Vec2D> road_polygon = getRoadPolygon (overall_info->road_info);
+    mp::Vec2D* host_road_polygon = road_polygon.data();
+
+    uint totalRoadPolygonPoints = road_polygon.size();
+    uint totalRoadPolygonSize = totalRoadPolygonPoints * sizeof(mp::Vec2D);
+
+    mp::Vec2D* device_road_polygon;
+
+    cudaMalloc ((void**)&device_road_polygon, totalRoadPolygonSize);
+    checkCudaError ( "Road polygon cudaMalloc booommm!!!!" );
+
+    cudaMemcpy (device_road_polygon, host_road_polygon, totalRoadPolygonSize, cudaMemcpyHostToDevice);
+    checkCudaError ( "Road polygon memCopy booommm!!!!" );
+
+    ros::Time start_time = ros::Time::now();
+
+    // Kernel call
+    calculate_cost <<<1,child_nodes.size()>>> (device_child_node_array,
+                                               device_road_polygon, totalRoadPolygonPoints);
     cudaDeviceSynchronize();
 
-    cudaMemcpy (host_node_array, device_node_array, totalNodesSize, cudaMemcpyDeviceToHost);
+
+
+    // Copy all necessary data from GPU to CPU
+    cudaMemcpy (host_child_node_array, device_child_node_array, totalChildNodesSize, cudaMemcpyDeviceToHost);
+
+    ros::Time end_time = ros::Time::now();
+    std::cout<<"\nCUDA Execution time : "<<(end_time-start_time).toSec()<<std::endl;
 
     // Free memory on the gpu
-    cudaFree (device_node_array);
+    cudaFree (device_child_node_array);
+    cudaFree (device_road_polygon);
 
     // Store nodes evaluated in the recent cycle
     overall_info->mp_info.curr_eval_nodes.clear();
-    for (uint i = 0; i < totalNodes; ++i)
+    for (uint i = 0; i < totalChildNodes; ++i)
     {
-        overall_info->mp_info.curr_eval_nodes.push_back (host_node_array[i]);
+        overall_info->mp_info.curr_eval_nodes.push_back (host_child_node_array[i]);
     }
+}
+
+std::vector<mp::Vec2D> getRoadPolygon(const mp::RoadInfo& road_info)
+{
+    std::vector<mp::Vec2D> polygon_points;
+
+    mp::LaneInfo leftmost_lane = road_info.lanes[0];
+    double leftmost_lane_half_width = leftmost_lane.lane_width / 2;
+
+    for ( std::vector<mp::Pose2D>::const_iterator iter = leftmost_lane.lane_points.begin();
+          iter != leftmost_lane.lane_points.end(); ++iter )
+    {
+        mp::Vec2D point;
+        point.x = leftmost_lane_half_width * cos(iter->theta + M_PI_2) + iter->x;
+        point.y = leftmost_lane_half_width * sin(iter->theta + M_PI_2) + iter->y;
+
+        polygon_points.push_back( point );
+    }
+
+    // Get rightmost lane edge
+    mp::LaneInfo rightmost_lane = road_info.lanes[ road_info.num_lanes - 1 ];
+    double rightmost_lane_half_width = rightmost_lane.lane_width / 2;
+
+    for ( std::vector<mp::Pose2D>::const_reverse_iterator iter = rightmost_lane.lane_points.rbegin();
+          iter != rightmost_lane.lane_points.rend(); ++iter )
+    {
+        mp::Vec2D point;
+        point.x = rightmost_lane_half_width * cos(iter->theta - M_PI_2) + iter->x;
+        point.y = rightmost_lane_half_width * sin(iter->theta - M_PI_2) + iter->y;
+
+        polygon_points.push_back( point );
+    }
+
+    return polygon_points;
 }
 
 }

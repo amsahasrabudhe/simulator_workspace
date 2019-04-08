@@ -8,7 +8,7 @@
 namespace mp
 {
 
-class PlannerConfig
+struct PlannerConfig
 {
     public:     /// functions
         PlannerConfig():
