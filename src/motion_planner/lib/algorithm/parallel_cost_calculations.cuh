@@ -19,4 +19,6 @@ namespace cuda_mp
     void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& config, const std::shared_ptr<mp::OverallInfo>& overall_info);
 
     std::vector<mp::Vec2D> getRoadPolygon(const mp::RoadInfo& road_info);
+
+    std::vector<mp::Vec2D> getTrafficPolygons(const std::vector<mp::Vehicle>& traffic);
 }
