@@ -36,6 +36,7 @@ class MPInfo
 
         /// Algorithm variables
         std::vector<Node> curr_eval_nodes;      /// Child nodes evaluated in the latest cycle
+        Node              curr_best_node;       /// Control values used for the current update cycle
 };
 
 }

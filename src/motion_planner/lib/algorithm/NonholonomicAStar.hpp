@@ -52,7 +52,6 @@ class NonholonomicAStar
         std::shared_ptr<OverallInfo>    m_overall_info;
         PlannerConfig                   m_cfg;
 
-        std::priority_queue<Node>       m_priority_queue;
         std::vector<Node>               m_open_list;
         std::vector<Node>               m_closed_list;
 };

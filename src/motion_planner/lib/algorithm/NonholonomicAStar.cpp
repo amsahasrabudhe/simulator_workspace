@@ -33,17 +33,44 @@ void NonholonomicAStar::update()
 void NonholonomicAStar::planPath()
 {
     // Clear contents of all vectors and queues from previous cycle
-    m_priority_queue = std::priority_queue<Node>();
+    std::priority_queue<Node, std::vector<Node>, CompareNodeCost> priority_queue;
     m_open_list.clear();
     m_closed_list.clear();
 
     // Create node for the current state of ego vehicle
-    mp::EgoVehicle ego = *m_overall_info->ego_state;
-    Node *node = new Node(ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
+    mp::EgoVehicle ego = *(m_overall_info->ego_state);
+    Node *curr_node = new Node(ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
 
-    std::vector<mp::Node> child_nodes = mp::getChildNodes(node, m_cfg);
+    uint count  = 0;
+    while (count < 20)
+    {
+        // Generate child node
+        std::vector<mp::Node> child_nodes = mp::getChildNodes(curr_node, m_cfg);
 
-    cuda_mp::calculateCost(child_nodes, m_cfg, m_overall_info);
+        // Calculate cost for child node
+        cuda_mp::calculateCost(child_nodes, m_cfg, m_overall_info);
+
+        // Add generated child nodes in priority queue
+        for (const auto& node : m_overall_info->mp_info.curr_eval_nodes)
+        {
+            priority_queue.push (node);
+        }
+
+        // Get topmost node
+        *curr_node = priority_queue.top();
+        priority_queue.pop();
+
+        count++;
+    }
+
+    while (curr_node->parent->parent != nullptr)
+    {
+        std::cout<<curr_node->parent<<std::endl;
+        curr_node = curr_node->parent;
+    }
+
+    // Save the current best node for execution
+    m_overall_info->mp_info.curr_best_node = *curr_node;
 }
 
 void NonholonomicAStar::addToOpenList (const Node& node)

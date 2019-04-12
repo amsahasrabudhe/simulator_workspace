@@ -20,20 +20,16 @@ class Node
             vel(vel),
             accel(accel),
             gx(0.0),
-            hx(0.0),
-            parent(nullptr)
+            hx(0.0)
         {
-
+            parent = nullptr;
         }
 
         void setParent(Node* parent)
         {
             this->parent = parent;
-        }
 
-        bool operator< (const Node& other) const
-        {
-            return (gx+hx) < (other.gx + other.hx);
+            this->gx = parent->gx;
         }
 
         bool operator== (const Node& other) const
@@ -58,6 +54,17 @@ class Node
         double hx;
 
         Node   *parent;
+};
+
+class CompareNodeCost
+{
+public:
+
+    // Comparator to arrange in increasing order of cost
+    bool operator()(Node const& node1, Node const& node2)
+    {
+        return (node1.gx + node1.hx) > (node2.gx + node2.hx);
+    }
 };
 
 }

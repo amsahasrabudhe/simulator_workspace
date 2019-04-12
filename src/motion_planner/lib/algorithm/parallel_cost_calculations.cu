@@ -133,8 +133,16 @@ void calculate_cost(mp::Node* device_child_node_array,
 
     bool inside_road_boundary = isNodeInsideRoad(child_node_polygon_points, road_polygon, road_polygon_point_count);
 
+    if (!inside_road_boundary)
+        device_child_node_array[threadIdx.x].hx += 50;
+
     bool is_colliding = nodeCollidesWithTraffic (child_node_polygon_points, traffic_polygons, traffic_veh_count);
 
+    if (!is_colliding)
+        device_child_node_array[threadIdx.x].hx += 150;
+
+    // Update gx for the node
+    device_child_node_array[threadIdx.x].gx += device_child_node_array[threadIdx.x].hx;
 }
 
 /***********************************HOST FUNCTIONS****************************************/

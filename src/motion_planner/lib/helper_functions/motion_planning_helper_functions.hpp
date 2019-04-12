@@ -16,10 +16,9 @@ std::vector<Node> getChildNodes(Node* parent, const PlannerConfig& config)
 
     for (int steering_change = -15; steering_change <= 15; steering_change += 5)
     {
-        mp::Node child;
-        child.setParent(parent);
+        mp::Node child;        
 
-        double dt = 2;    ///< seconds
+        double dt = 0.2;    ///< seconds
 
         double curr_theta = parent->pose.theta;
         double curr_vel = parent->vel;
@@ -44,11 +43,11 @@ std::vector<Node> getChildNodes(Node* parent, const PlannerConfig& config)
             child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
         }
 
-        child.vel += dt * parent->accel;
+        child.vel = parent->vel + dt * parent->accel;
 
         // TODO Add accel change
 
-        child.gx = parent->gx;
+        child.setParent(parent);
 
         children.push_back( child );
     }
