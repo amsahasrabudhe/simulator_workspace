@@ -119,30 +119,34 @@ void calculateVehiclePolygon(const mp::Node& node, mp::Vec2D* veh_polygon_points
     veh_polygon_points[3] = rear_right;
 }
 
-
-
 __global__
 void calculate_cost(mp::Node* device_child_node_array,
                     mp::Vec2D* road_polygon, const uint road_polygon_point_count,
-                    mp::Vec2D* traffic_polygons, const uint traffic_veh_count)
+                    mp::Vec2D* traffic_polygons, const uint traffic_veh_count,
+                    const double lane_center_y)
 {
-//    printf("\n Theta: %f, Pose: %f , %f ", device_node_array[threadIdx.x].pose.theta, device_node_array[threadIdx.x].pose.x, device_node_array[threadIdx.x].pose.y);
-
     mp::Vec2D child_node_polygon_points[4];
     calculateVehiclePolygon( device_child_node_array[threadIdx.x], child_node_polygon_points );
 
+    // Calculate cost of going off road
     bool inside_road_boundary = isNodeInsideRoad(child_node_polygon_points, road_polygon, road_polygon_point_count);
 
     if (!inside_road_boundary)
         device_child_node_array[threadIdx.x].hx += 50;
 
+    // Calculate cost of collision
     bool is_colliding = nodeCollidesWithTraffic (child_node_polygon_points, traffic_polygons, traffic_veh_count);
 
-    if (!is_colliding)
+    if (is_colliding)
         device_child_node_array[threadIdx.x].hx += 150;
 
-    // Update gx for the node
-    device_child_node_array[threadIdx.x].gx += device_child_node_array[threadIdx.x].hx;
+    // Calculate cost of lane offset
+    device_child_node_array[threadIdx.x].hx += fabs(device_child_node_array[threadIdx.x].pose.y - lane_center_y) * 1;
+
+    // TODO : Add distance to goal heurestic
+
+    if (!inside_road_boundary || is_colliding)
+        device_child_node_array[threadIdx.x].safe = false;
 }
 
 /***********************************HOST FUNCTIONS****************************************/
@@ -198,20 +202,20 @@ void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& 
     checkCudaError ( "Traffic polygons array cudaMalloc booommm!!!!" );
 
     cudaMemcpy (device_traffic_polygons_array, host_traffic_polygons_array, total_traffic_polygons_size, cudaMemcpyHostToDevice);
+    checkCudaError ( "Traffic polygons array memCopy booommm!!!!" );
 
-    ros::Time start_time = ros::Time::now();
+    double lane_center_y = overall_info->nearest_lane_point_with_index.second.y;
 
     // Kernel call
     calculate_cost <<<1,child_nodes.size()>>> (device_child_node_array,
                                                device_road_polygon, totalRoadPolygonPoints,
-                                               device_traffic_polygons_array, total_traffic_vehicles);
+                                               device_traffic_polygons_array,
+                                               total_traffic_vehicles,
+                                               lane_center_y);
     cudaDeviceSynchronize();
 
     // Copy all necessary data from GPU to CPU
     cudaMemcpy (host_child_node_array, device_child_node_array, totalChildNodesSize, cudaMemcpyDeviceToHost);
-
-    ros::Time end_time = ros::Time::now();
-    std::cout<<"\nCUDA Execution time : "<<(end_time-start_time).toSec()<<std::endl;
 
     // Free memory on the gpu
     cudaFree (device_child_node_array);

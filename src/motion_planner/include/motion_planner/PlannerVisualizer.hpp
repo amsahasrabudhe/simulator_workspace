@@ -35,6 +35,7 @@ class PlannerVisualizer
         void addRoadPolygonVis();
         void addEgoPolygonVis();
 
+        void addPlannedPathVis();
         void addCurrChildNodesVis();
 
     private:

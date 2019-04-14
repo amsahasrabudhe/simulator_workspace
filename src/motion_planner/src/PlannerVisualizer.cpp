@@ -42,6 +42,7 @@ void PlannerVisualizer::addVisualization()
     addRoadPolygonVis();
     addEgoPolygonVis();
 
+    addPlannedPathVis();
     addCurrChildNodesVis();
 }
 
@@ -296,7 +297,7 @@ void PlannerVisualizer::addEgoPolygonVis()
 void PlannerVisualizer::addCurrChildNodesVis()
 {
     // Draw child nodes evaulated in the recent update cycle
-    for (std::size_t i = 0; i < m_overall_info->mp_info.curr_eval_nodes.size() ; ++i)
+    for (std::size_t i = 0; i < m_overall_info->mp_info.planned_path.size() ; ++i)
     {
         visualization_msgs::Marker child_node;
 
@@ -308,12 +309,12 @@ void PlannerVisualizer::addCurrChildNodesVis()
         child_node.action = visualization_msgs::Marker::ADD;
         child_node.ns     = "curr_child_nodes";
 
-        child_node.pose.position.x = m_overall_info->mp_info.curr_eval_nodes[i].pose.x + cos(m_overall_info->mp_info.curr_eval_nodes[i].pose.theta) * m_cfg.wheel_base/2;
-        child_node.pose.position.y = m_overall_info->mp_info.curr_eval_nodes[i].pose.y + sin(m_overall_info->mp_info.curr_eval_nodes[i].pose.theta) * m_cfg.wheel_base/2;
+        child_node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
+        child_node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
         child_node.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->mp_info.curr_eval_nodes[i].pose.theta);
+        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.theta);
 
         child_node.pose.orientation.x = q.x();
         child_node.pose.orientation.y = q.y();
@@ -333,6 +334,49 @@ void PlannerVisualizer::addCurrChildNodesVis()
         child_node.frame_locked = true;
 
         m_vis_msg->markers.push_back(child_node);
+    }
+}
+
+void PlannerVisualizer::addPlannedPathVis()
+{
+    // Draw child nodes evaulated in the recent update cycle
+    for (std::size_t i = 0; i < m_overall_info->mp_info.planned_path.size() ; ++i)
+    {
+        visualization_msgs::Marker node;
+
+        node.header.stamp = ros::Time::now();
+        node.header.frame_id = "world_origin";
+
+        node.id     = 10000 + static_cast<int>(i);
+        node.type   = visualization_msgs::Marker::CUBE;
+        node.action = visualization_msgs::Marker::ADD;
+        node.ns     = "planned";
+
+        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
+        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
+        node.pose.position.z = m_cfg.height / 2;
+
+        tf2::Quaternion q;
+        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.theta);
+
+        node.pose.orientation.x = q.x();
+        node.pose.orientation.y = q.y();
+        node.pose.orientation.z = q.z();
+        node.pose.orientation.w = q.w();
+
+        node.scale.x = m_overall_info->ego_state->length;
+        node.scale.y = m_overall_info->ego_state->width;
+        node.scale.z = 0.1;
+
+        node.color.r = 1.0;
+        node.color.g = 0.3f * (i-1);
+        node.color.b = 0.3f * (i+1);
+        node.color.a = 0.7f;
+
+        node.lifetime = ros::Duration(0.1);
+        node.frame_locked = true;
+
+        m_vis_msg->markers.push_back(node);
     }
 }
 

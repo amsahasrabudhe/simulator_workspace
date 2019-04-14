@@ -21,56 +21,84 @@ void NonholonomicAStar::initialize()
 void NonholonomicAStar::update()
 {
     // Get Lane points based on localization information
-    m_overall_info->curr_poly_lanepoints = getLanePointsForPolyFit();
+//    m_overall_info->curr_poly_lanepoints = getLanePointsForPolyFit();
 
-//    // Fit spline for given lane points
+    // Fit spline for given lane points
 //    m_overall_info->lane_center_spline = getSpline( m_overall_info->curr_poly_lanepoints );
+
+    ros::Time start_time = ros::Time::now();
 
     // Call the actual planner function
     planPath ();
+
+    ros::Time end_time = ros::Time::now();
+    std::cout<<"\nPlan Path Execution time : "<<(end_time-start_time).toSec()<<std::endl;
 }
 
 void NonholonomicAStar::planPath()
 {
     // Clear contents of all vectors and queues from previous cycle
     std::priority_queue<Node, std::vector<Node>, CompareNodeCost> priority_queue;
+    std::map<uint, Node> all_nodes;
     m_open_list.clear();
     m_closed_list.clear();
 
+    uint node_num = 1;
+
     // Create node for the current state of ego vehicle
     mp::EgoVehicle ego = *(m_overall_info->ego_state);
-    Node *curr_node = new Node(ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
+    Node curr_node(node_num, ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
+
+    Node start = curr_node;
+
+    all_nodes[node_num] = curr_node;
+    priority_queue.push(curr_node);
 
     uint count  = 0;
-    while (count < 20)
+    while ( !priority_queue.empty() && curr_node.distFrom(start) < 4 )
     {
+        // Get topmost node
+        curr_node = priority_queue.top();
+        priority_queue.pop();
+
         // Generate child node
         std::vector<mp::Node> child_nodes = mp::getChildNodes(curr_node, m_cfg);
+
+        ros::Time start_time = ros::Time::now();
 
         // Calculate cost for child node
         cuda_mp::calculateCost(child_nodes, m_cfg, m_overall_info);
 
-        // Add generated child nodes in priority queue
-        for (const auto& node : m_overall_info->mp_info.curr_eval_nodes)
-        {
-            priority_queue.push (node);
-        }
+        ros::Time end_time = ros::Time::now();
+//        std::cout<<"Cuda time : "<<(end_time-start_time).toSec()<<std::endl;
 
-        // Get topmost node
-        *curr_node = priority_queue.top();
-        priority_queue.pop();
+        // Add generated child nodes in priority queue
+        for (auto& node : m_overall_info->mp_info.curr_eval_nodes)
+        {
+            if (node.safe)
+            {
+                ++node_num;
+                node.node_index = node_num;
+                all_nodes[node_num] = node;
+
+                priority_queue.push (node);
+            }
+        }
 
         count++;
     }
 
-    while (curr_node->parent->parent != nullptr)
+    m_overall_info->mp_info.planned_path.clear ();
+    while (all_nodes.size() > 1 && curr_node.parent_index != 1)
     {
-        std::cout<<curr_node->parent<<std::endl;
-        curr_node = curr_node->parent;
+        std::cout<<curr_node.parent_index<<std::endl;
+
+        m_overall_info->mp_info.planned_path.push_back(curr_node);
+        curr_node = all_nodes[curr_node.parent_index];
     }
 
     // Save the current best node for execution
-    m_overall_info->mp_info.curr_best_node = *curr_node;
+    m_overall_info->mp_info.curr_best_node = curr_node;
 }
 
 void NonholonomicAStar::addToOpenList (const Node& node)
@@ -115,7 +143,6 @@ void NonholonomicAStar::localize(const std::size_t& known_current_lane, const st
 
     /// Update MPInfo
     m_overall_info->mp_info.current_lane = curr_lane;
-    //m_overall_info->mp_info.desired_lane = curr_lane;
 
     /// Update localization information in OverallInfo
     m_overall_info->nearest_lane_point_with_index = nearest_lane_point;
