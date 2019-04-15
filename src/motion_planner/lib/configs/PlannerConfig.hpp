@@ -25,7 +25,8 @@ struct PlannerConfig
             poly_fit_min_lane_points(10),
             poly_fit_lane_points_behind_veh(1),
             poly_fit_speed_scale_factor(2.0),
-            dist_to_goal(5),
+            threads_per_block(15),
+            dist_to_goal(6),
             update_time_s(0.05)
         {
 
@@ -54,6 +55,7 @@ struct PlannerConfig
         std::size_t     poly_fit_lane_points_behind_veh;    ///< Number of lane points from behind the vehicle used for smooth transition in curve fitting
         double          poly_fit_speed_scale_factor;        ///< Scaling factor for calculating distance for total poly fit
 
+        std::size_t     threads_per_block;
         double          dist_to_goal;
 
         double          update_time_s;                  ///< Planner algorithm update time

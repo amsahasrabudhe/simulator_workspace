@@ -86,19 +86,12 @@ void NonholonomicAStar::planPath()
         if (dist_covered)
             break;
 
-//        // Get topmost node
-//        curr_node = priority_queue.top();
-//        priority_queue.pop();
-
-//        // Generate child node
-//        std::vector<mp::Node> child_nodes = mp::getChildNodes(curr_node, m_cfg);
-
-        ros::Time start_time = ros::Time::now();
+//        ros::Time start_time = ros::Time::now();
 
         // Calculate cost for child node
         cuda_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
 
-        ros::Time end_time = ros::Time::now();
+//        ros::Time end_time = ros::Time::now();
 //        std::cout<<"Cuda time : "<<(end_time-start_time).toSec()<<std::endl;
 
         // Add generated child nodes in priority queue
@@ -120,8 +113,6 @@ void NonholonomicAStar::planPath()
     m_overall_info->mp_info.planned_path.clear ();
     while (all_nodes.size() > 1 && curr_node.parent_index != 1)
     {
-        std::cout<<curr_node.parent_index<<std::endl;
-
         m_overall_info->mp_info.planned_path.push_back(curr_node);
         curr_node = all_nodes[curr_node.parent_index];
     }

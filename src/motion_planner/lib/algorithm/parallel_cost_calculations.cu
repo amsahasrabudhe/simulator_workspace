@@ -120,7 +120,8 @@ void calculateVehiclePolygon(const mp::Node& node, mp::Vec2D* veh_polygon_points
 }
 
 __global__
-void calculate_cost(mp::Node* device_child_node_array,
+void calculate_cost(std::size_t threads_per_block,
+                    mp::Node* device_child_node_array,
                     mp::Vec2D* road_polygon, const uint road_polygon_point_count,
                     mp::Vec2D* traffic_polygons, const uint traffic_veh_count,
                     const double lane_center_y,
@@ -128,7 +129,8 @@ void calculate_cost(mp::Node* device_child_node_array,
                     const double start_x,
                     const double start_y)
 {
-    mp::Node* curr_child_node = &device_child_node_array[threadIdx.x];
+    std::size_t curr_index = threadIdx.x + threads_per_block * blockIdx.x;
+    mp::Node* curr_child_node = &device_child_node_array[curr_index];
 
     mp::Vec2D child_node_polygon_points[4];
     calculateVehiclePolygon( *curr_child_node, child_node_polygon_points );
@@ -154,7 +156,7 @@ void calculate_cost(mp::Node* device_child_node_array,
     double dist_from_start = pow(dist_sq, 0.5);
 
     // Distance from goal heuristic
-    curr_child_node->hx += dist_to_goal - dist_from_start;
+//    curr_child_node->hx += dist_to_goal - dist_from_start;
 
     if (!inside_road_boundary || is_colliding)
         curr_child_node->safe = false;
@@ -177,8 +179,6 @@ void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& 
     uint totalChildNodesSize = totalChildNodes * sizeof(mp::Node);
 
     mp::Node* device_child_node_array;
-
-    std::cout<<"TOTAL MEMORY FOR CHILD NODES : "<<totalChildNodesSize<<std::endl;
 
     cudaMalloc ((void**)&device_child_node_array, totalChildNodesSize);
     checkCudaError ( "Node array cudaMalloc booommm!!!!" );
@@ -219,8 +219,11 @@ void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& 
 
     double lane_center_y = overall_info->nearest_lane_point_with_index.second.y;
 
+    std::size_t num_blocks = static_cast<std::size_t>( ceil( child_nodes.size()/config.threads_per_block ) );
+
     // Kernel call
-    calculate_cost <<<1,child_nodes.size()>>> (device_child_node_array,
+    calculate_cost <<<num_blocks, config.threads_per_block>>> (config.threads_per_block,
+                                               device_child_node_array,
                                                device_road_polygon, totalRoadPolygonPoints,
                                                device_traffic_polygons_array,
                                                total_traffic_vehicles,
@@ -288,8 +291,6 @@ std::vector<mp::Vec2D> getTrafficPolygons(const std::vector<mp::Vehicle>& traffi
     {
         double yaw = vehicle.pose.theta;
 
-//        double front      = 3.869;    // approx (vehicle.length/2 + vehicle.wheel_base/2)
-//        double rear       = 0.910;    // approx (vehicle.length/2 - vehicle.wheel_base/2)
         double front      = 2.389;    // vehicle.length/2 (since simulator publishes midpoint as pose)
         double rear       = 2.389;    // vehicle.length/2
         double width_by_2 = 1.05;
