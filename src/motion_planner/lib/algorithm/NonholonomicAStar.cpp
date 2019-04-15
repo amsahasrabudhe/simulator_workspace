@@ -21,7 +21,7 @@ void NonholonomicAStar::initialize()
 void NonholonomicAStar::update()
 {
     // Get Lane points based on localization information
-//    m_overall_info->curr_poly_lanepoints = getLanePointsForPolyFit();
+    m_overall_info->curr_poly_lanepoints = getLanePointsForPolyFit();
 
     // Fit spline for given lane points
 //    m_overall_info->lane_center_spline = getSpline( m_overall_info->curr_poly_lanepoints );
@@ -55,19 +55,48 @@ void NonholonomicAStar::planPath()
     priority_queue.push(curr_node);
 
     uint count  = 0;
-    while ( !priority_queue.empty() && curr_node.distFrom(start) < 4 )
+    while ( !priority_queue.empty() )
     {
-        // Get topmost node
-        curr_node = priority_queue.top();
-        priority_queue.pop();
+        std::vector<mp::Node> total_child_nodes;
 
-        // Generate child node
-        std::vector<mp::Node> child_nodes = mp::getChildNodes(curr_node, m_cfg);
+        bool dist_covered = false;
+
+        uint i = 0;
+        while (i < 15 && !priority_queue.empty())
+        {
+            // Get topmost node
+            curr_node = priority_queue.top();
+            priority_queue.pop();
+
+            if (curr_node.distFrom(start) > m_cfg.dist_to_goal)
+            {
+                dist_covered = true;
+                break;
+            }
+
+            // Generate child node
+            std::vector<mp::Node> child_nodes = mp::getChildNodes(curr_node, m_cfg);
+
+            for (std::size_t num = 0; num < child_nodes.size (); ++num)
+            {
+                total_child_nodes.push_back( child_nodes.at(num) );
+            }
+        }
+
+        if (dist_covered)
+            break;
+
+//        // Get topmost node
+//        curr_node = priority_queue.top();
+//        priority_queue.pop();
+
+//        // Generate child node
+//        std::vector<mp::Node> child_nodes = mp::getChildNodes(curr_node, m_cfg);
 
         ros::Time start_time = ros::Time::now();
 
         // Calculate cost for child node
-        cuda_mp::calculateCost(child_nodes, m_cfg, m_overall_info);
+        cuda_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
 
         ros::Time end_time = ros::Time::now();
 //        std::cout<<"Cuda time : "<<(end_time-start_time).toSec()<<std::endl;

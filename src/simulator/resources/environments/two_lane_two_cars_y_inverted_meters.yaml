@@ -95,7 +95,7 @@ traffic_vehicles:
   static: 1
   vehicle_id: 100
   vehicle_pose: {theta: 0.0, x: 61.71841500362016, y: 25.024778748620474}
-- initial_velocity: 7
+- initial_velocity: 2
   static: 0
   vehicle_id: 101
   vehicle_pose: {theta: 0.0, x: 3.163244504741352, y: 29.312732410603196}

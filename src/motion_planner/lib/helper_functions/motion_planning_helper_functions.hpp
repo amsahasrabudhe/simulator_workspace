@@ -27,6 +27,9 @@ std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
         double curr_steering = parent.steering + steering_change*toRadians;
         child.steering = curr_steering;
 
+        if (child.steering > config.max_steering_rad)
+            child.steering = config.max_steering_rad;
+
         double beta = dt * curr_vel * tan(curr_steering) / config.wheel_base;
         double R = dt * curr_vel / beta;
 

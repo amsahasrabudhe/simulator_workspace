@@ -22,10 +22,11 @@ struct PlannerConfig
             max_jerk_mpsss(1.0),
             max_steering_rad(0.698132),
             poly_fit_degree(3),
-            poly_fit_min_lane_points(20),
+            poly_fit_min_lane_points(10),
             poly_fit_lane_points_behind_veh(1),
             poly_fit_speed_scale_factor(2.0),
-            update_time_s(0.02)
+            dist_to_goal(5),
+            update_time_s(0.05)
         {
 
         }
@@ -52,6 +53,8 @@ struct PlannerConfig
         std::size_t     poly_fit_min_lane_points;           ///< Min number of lane points used for curve fitting
         std::size_t     poly_fit_lane_points_behind_veh;    ///< Number of lane points from behind the vehicle used for smooth transition in curve fitting
         double          poly_fit_speed_scale_factor;        ///< Scaling factor for calculating distance for total poly fit
+
+        double          dist_to_goal;
 
         double          update_time_s;                  ///< Planner algorithm update time
 };

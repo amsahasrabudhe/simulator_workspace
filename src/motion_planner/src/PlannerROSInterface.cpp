@@ -106,7 +106,7 @@ void PlannerROSInterface::setupEgoVehicle()
     /// Load initial values from scene information on parameter server
     double init_x = m_nh.param("/sim_scene_data/ego_veh_pose/x", 0.0);
     double init_y = m_nh.param("/sim_scene_data/ego_veh_pose/y", 0.0);
-    double init_theta = m_nh.param("/sim_scene_data/ego_veh_pose/theta", M_PI/2);
+    double init_theta = m_nh.param("/sim_scene_data/ego_veh_pose/theta", 0.0);
 
     m_overall_info->ego_state->setPose(init_x, init_y, init_theta);
     

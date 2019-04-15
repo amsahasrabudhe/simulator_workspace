@@ -123,30 +123,41 @@ __global__
 void calculate_cost(mp::Node* device_child_node_array,
                     mp::Vec2D* road_polygon, const uint road_polygon_point_count,
                     mp::Vec2D* traffic_polygons, const uint traffic_veh_count,
-                    const double lane_center_y)
+                    const double lane_center_y,
+                    const double dist_to_goal,
+                    const double start_x,
+                    const double start_y)
 {
+    mp::Node* curr_child_node = &device_child_node_array[threadIdx.x];
+
     mp::Vec2D child_node_polygon_points[4];
-    calculateVehiclePolygon( device_child_node_array[threadIdx.x], child_node_polygon_points );
+    calculateVehiclePolygon( *curr_child_node, child_node_polygon_points );
 
     // Calculate cost of going off road
     bool inside_road_boundary = isNodeInsideRoad(child_node_polygon_points, road_polygon, road_polygon_point_count);
 
     if (!inside_road_boundary)
-        device_child_node_array[threadIdx.x].hx += 50;
+        curr_child_node->hx += 50;
 
     // Calculate cost of collision
     bool is_colliding = nodeCollidesWithTraffic (child_node_polygon_points, traffic_polygons, traffic_veh_count);
 
     if (is_colliding)
-        device_child_node_array[threadIdx.x].hx += 150;
+        curr_child_node->hx += 150;
 
     // Calculate cost of lane offset
-    device_child_node_array[threadIdx.x].hx += fabs(device_child_node_array[threadIdx.x].pose.y - lane_center_y) * 1;
+    curr_child_node->hx += fabs(curr_child_node->pose.y - lane_center_y) * 20;
 
-    // TODO : Add distance to goal heurestic
+    double dist_sq = pow((curr_child_node->pose.x - start_x), 2) +
+            pow((curr_child_node->pose.y - start_y), 2);
+
+    double dist_from_start = pow(dist_sq, 0.5);
+
+    // Distance from goal heuristic
+    curr_child_node->hx += dist_to_goal - dist_from_start;
 
     if (!inside_road_boundary || is_colliding)
-        device_child_node_array[threadIdx.x].safe = false;
+        curr_child_node->safe = false;
 }
 
 /***********************************HOST FUNCTIONS****************************************/
@@ -166,6 +177,8 @@ void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& 
     uint totalChildNodesSize = totalChildNodes * sizeof(mp::Node);
 
     mp::Node* device_child_node_array;
+
+    std::cout<<"TOTAL MEMORY FOR CHILD NODES : "<<totalChildNodesSize<<std::endl;
 
     cudaMalloc ((void**)&device_child_node_array, totalChildNodesSize);
     checkCudaError ( "Node array cudaMalloc booommm!!!!" );
@@ -211,7 +224,10 @@ void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& 
                                                device_road_polygon, totalRoadPolygonPoints,
                                                device_traffic_polygons_array,
                                                total_traffic_vehicles,
-                                               lane_center_y);
+                                               lane_center_y,
+                                               config.dist_to_goal,
+                                               overall_info->ego_state->pose.x,
+                                               overall_info->ego_state->pose.y);
     cudaDeviceSynchronize();
 
     // Copy all necessary data from GPU to CPU

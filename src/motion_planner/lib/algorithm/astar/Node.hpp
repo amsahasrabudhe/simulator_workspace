@@ -10,7 +10,7 @@
 namespace mp
 {
 
-class Node
+struct Node
 {
     public:     /// functions
         Node(const uint& index = 0,
