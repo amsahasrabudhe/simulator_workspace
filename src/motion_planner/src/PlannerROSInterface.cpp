@@ -121,6 +121,11 @@ void PlannerROSInterface::updateEgoVehicleState()
 
     /// Calculate dt since last update in seconds
     double dt = now.toSec() - m_last_update_time.toSec();
+    if (dt > 0.1)
+    {
+        dt = 0.1;
+    }
+
     m_last_update_time = now;
 
     double curr_theta = m_overall_info->ego_state->pose.theta;

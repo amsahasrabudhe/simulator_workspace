@@ -138,17 +138,17 @@ void calculate_cost(std::size_t threads_per_block,
     // Calculate cost of going off road
     bool inside_road_boundary = isNodeInsideRoad(child_node_polygon_points, road_polygon, road_polygon_point_count);
 
-    if (!inside_road_boundary)
-        curr_child_node->hx += 50;
+//    if (!inside_road_boundary)
+//        curr_child_node->hx += 50;
 
     // Calculate cost of collision
     bool is_colliding = nodeCollidesWithTraffic (child_node_polygon_points, traffic_polygons, traffic_veh_count);
 
-    if (is_colliding)
-        curr_child_node->hx += 150;
+//    if (is_colliding)
+//        curr_child_node->hx += 100;
 
     // Calculate cost of lane offset
-    curr_child_node->hx += fabs(curr_child_node->pose.y - lane_center_y) * 20;
+//    curr_child_node->hx += fabs(curr_child_node->pose.y - lane_center_y);
 
     double dist_sq = pow((curr_child_node->pose.x - start_x), 2) +
             pow((curr_child_node->pose.y - start_y), 2);
@@ -156,7 +156,7 @@ void calculate_cost(std::size_t threads_per_block,
     double dist_from_start = pow(dist_sq, 0.5);
 
     // Distance from goal heuristic
-//    curr_child_node->hx += dist_to_goal - dist_from_start;
+    curr_child_node->hx += dist_to_goal - dist_from_start;
 
     if (!inside_road_boundary || is_colliding)
         curr_child_node->safe = false;
@@ -166,8 +166,9 @@ void calculate_cost(std::size_t threads_per_block,
 
 void checkCudaError(const std::string& error_msg)
 {
-    if (cudaGetLastError () != cudaSuccess)
-        std::cout<<error_msg<<std::endl;
+    cudaError_t error_code = cudaGetLastError();
+    if ( error_code != cudaSuccess)
+        std::cout<<error_msg<<"    Error Code: "<<error_code<<std::endl;
 }
 
 void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& config, const std::shared_ptr<mp::OverallInfo>& overall_info)
@@ -219,7 +220,7 @@ void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& 
 
     double lane_center_y = overall_info->nearest_lane_point_with_index.second.y;
 
-    std::size_t num_blocks = static_cast<std::size_t>( ceil( child_nodes.size()/config.threads_per_block ) );
+    std::size_t num_blocks = static_cast<std::size_t>( ceil( child_nodes.size()/static_cast<double>(config.threads_per_block) ) );
 
     // Kernel call
     calculate_cost <<<num_blocks, config.threads_per_block>>> (config.threads_per_block,
@@ -231,7 +232,10 @@ void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& 
                                                config.dist_to_goal,
                                                overall_info->ego_state->pose.x,
                                                overall_info->ego_state->pose.y);
-    cudaDeviceSynchronize();
+
+    checkCudaError ("KERNEL CALL BOOOOMMMM!!!");
+
+//    cudaDeviceSynchronize();
 
     // Copy all necessary data from GPU to CPU
     cudaMemcpy (host_child_node_array, device_child_node_array, totalChildNodesSize, cudaMemcpyDeviceToHost);

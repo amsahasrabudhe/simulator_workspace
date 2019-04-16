@@ -14,7 +14,7 @@ std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
 {
     std::vector<Node> children;
 
-    for (int steering_change = -10; steering_change <= 10; steering_change += 5)
+    for (double steering_change = -15; steering_change <= 15; steering_change += 5)
     {
         mp::Node child;        
 

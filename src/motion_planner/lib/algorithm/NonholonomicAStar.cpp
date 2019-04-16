@@ -61,8 +61,10 @@ void NonholonomicAStar::planPath()
 
         bool dist_covered = false;
 
+        ros::Time before_child_nodes = ros::Time::now();
+
         uint i = 0;
-        while (i < 15 && !priority_queue.empty())
+        while (i < 10 && !priority_queue.empty())
         {
             // Get topmost node
             curr_node = priority_queue.top();
@@ -81,18 +83,22 @@ void NonholonomicAStar::planPath()
             {
                 total_child_nodes.push_back( child_nodes.at(num) );
             }
+
+            i++;
         }
 
         if (dist_covered)
             break;
 
-//        ros::Time start_time = ros::Time::now();
+        ros::Time after_child_nodes = ros::Time::now();
+
+//        std::cout<<"Child node generation : "<<(after_child_nodes-before_child_nodes).toSec()<<std::endl;
 
         // Calculate cost for child node
         cuda_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
 
-//        ros::Time end_time = ros::Time::now();
-//        std::cout<<"Cuda time : "<<(end_time-start_time).toSec()<<std::endl;
+        ros::Time after_cuda_call = ros::Time::now();
+//        std::cout<<"Cuda time : "<<(after_cuda_call-after_child_nodes).toSec()<<std::endl;
 
         // Add generated child nodes in priority queue
         for (auto& node : m_overall_info->mp_info.curr_eval_nodes)
@@ -106,6 +112,10 @@ void NonholonomicAStar::planPath()
                 priority_queue.push (node);
             }
         }
+
+        ros::Time after_child_nodes_management = ros::Time::now();
+
+//        std::cout<<"Child node management : "<<(after_child_nodes_management-after_cuda_call).toSec()<<std::endl;
 
         count++;
     }

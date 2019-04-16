@@ -25,8 +25,8 @@ struct PlannerConfig
             poly_fit_min_lane_points(10),
             poly_fit_lane_points_behind_veh(1),
             poly_fit_speed_scale_factor(2.0),
-            threads_per_block(15),
-            dist_to_goal(6),
+            threads_per_block(32),
+            dist_to_goal(4.5),
             update_time_s(0.05)
         {
 
