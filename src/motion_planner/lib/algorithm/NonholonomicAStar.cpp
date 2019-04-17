@@ -5,9 +5,11 @@
 namespace mp
 {
 
-NonholonomicAStar::NonholonomicAStar(const std::shared_ptr<OverallInfo>& overall_info, const PlannerConfig& cfg):
+NonholonomicAStar::NonholonomicAStar(const ros::NodeHandle& nh, const std::shared_ptr<OverallInfo>& overall_info, const PlannerConfig& cfg):
+    m_nh(nh),
     m_overall_info(overall_info),
-    m_cfg(cfg)
+    m_cfg(cfg),
+    m_planner_failed(false)
 {
 
 }
@@ -16,6 +18,9 @@ void NonholonomicAStar::initialize()
 {
     // Find current lane
     localize( m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first );
+
+    m_plan_path_timer = m_nh.createTimer(ros::Duration(m_cfg.plan_path_time_s), &NonholonomicAStar::planPath, this);
+    m_plan_path_timer.start();
 }
 
 void NonholonomicAStar::update()
@@ -26,109 +31,129 @@ void NonholonomicAStar::update()
     // Fit spline for given lane points
 //    m_overall_info->lane_center_spline = getSpline( m_overall_info->curr_poly_lanepoints );
 
-    ros::Time start_time = ros::Time::now();
-
-    // Call the actual planner function
-    planPath ();
-
-    ros::Time end_time = ros::Time::now();
-    std::cout<<"\nPlan Path Execution time : "<<(end_time-start_time).toSec()<<std::endl;
 }
 
-void NonholonomicAStar::planPath()
+void NonholonomicAStar::planPath(const ros::TimerEvent& event)
 {
-    // Clear contents of all vectors and queues from previous cycle
-    std::priority_queue<Node, std::vector<Node>, CompareNodeCost> priority_queue;
-    std::map<uint, Node> all_nodes;
-    m_open_list.clear();
-    m_closed_list.clear();
-
-    uint node_num = 1;
-
-    // Create node for the current state of ego vehicle
-    mp::EgoVehicle ego = *(m_overall_info->ego_state);
-    Node curr_node(node_num, ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
-
-    Node start = curr_node;
-
-    all_nodes[node_num] = curr_node;
-    priority_queue.push(curr_node);
-
-    uint count  = 0;
-    while ( !priority_queue.empty() )
+    if (m_planner_failed == false)
     {
-        std::vector<mp::Node> total_child_nodes;
+        ros::Time start_time = ros::Time::now();
 
-        bool dist_covered = false;
+        // Clear contents of all vectors and queues from previous cycle
+        std::priority_queue<Node, std::vector<Node>, CompareNodeCost> priority_queue;
+        std::map<uint, Node> all_nodes;
+        m_open_list.clear();
+        m_closed_list.clear();
 
-        ros::Time before_child_nodes = ros::Time::now();
+        uint node_num = 1;
 
-        uint i = 0;
-        while (i < 10 && !priority_queue.empty())
+        // Create node for the current state of ego vehicle
+        mp::EgoVehicle ego = *(m_overall_info->ego_state);
+        Node curr_node(node_num, ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
+
+        Node start = curr_node;
+
+        all_nodes[node_num] = curr_node;
+        priority_queue.push(curr_node);
+
+        uint count  = 0;
+        while ( !priority_queue.empty() )
         {
-            // Get topmost node
-            curr_node = priority_queue.top();
-            priority_queue.pop();
-
-            if (curr_node.distFrom(start) > m_cfg.dist_to_goal)
+            // Cancel path planning if its taking long time
+            if ((ros::Time::now() - start_time).toSec() > 1.0)
             {
-                dist_covered = true;
+                m_planner_failed = true;
                 break;
             }
 
-            // Generate child node
-            std::vector<mp::Node> child_nodes = mp::getChildNodes(curr_node, m_cfg);
+            std::vector<mp::Node> total_child_nodes;
 
-            for (std::size_t num = 0; num < child_nodes.size (); ++num)
+            bool dist_covered = false;
+
+            ros::Time before_child_nodes = ros::Time::now();
+
+            uint i = 0;
+            while (i < 15 && !priority_queue.empty())
             {
-                total_child_nodes.push_back( child_nodes.at(num) );
+                // Get topmost node
+                curr_node = priority_queue.top();
+                priority_queue.pop();
+
+                if (curr_node.distFrom(start) > m_cfg.dist_to_goal)
+                {
+                    dist_covered = true;
+                    break;
+                }
+
+                // Generate child node
+                std::vector<mp::Node> child_nodes = mp::getChildNodes(curr_node, m_cfg);
+
+                for (std::size_t num = 0; num < child_nodes.size (); ++num)
+                {
+                    total_child_nodes.push_back( child_nodes.at(num) );
+                }
+
+                i++;
             }
 
-            i++;
+            if (dist_covered)
+                break;
+
+            ros::Time after_child_nodes = ros::Time::now();
+
+    //        std::cout<<"Child node generation : "<<(after_child_nodes-before_child_nodes).toSec()<<std::endl;
+
+            // Calculate cost for child node
+            cuda_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
+
+            ros::Time after_cuda_call = ros::Time::now();
+    //        std::cout<<"Cuda time : "<<(after_cuda_call-after_child_nodes).toSec()<<std::endl;
+
+            // Add generated child nodes in priority queue
+            for (auto& node : m_overall_info->mp_info.curr_eval_nodes)
+            {
+                if (node.safe)
+                {
+                    ++node_num;
+                    node.node_index = node_num;
+                    all_nodes[node_num] = node;
+
+                    priority_queue.push (node);
+                }
+            }
+
+            ros::Time after_child_nodes_management = ros::Time::now();
+
+    //        std::cout<<"Child node management : "<<(after_child_nodes_management-after_cuda_call).toSec()<<std::endl;
+
+            count++;
         }
 
-        if (dist_covered)
-            break;
-
-        ros::Time after_child_nodes = ros::Time::now();
-
-//        std::cout<<"Child node generation : "<<(after_child_nodes-before_child_nodes).toSec()<<std::endl;
-
-        // Calculate cost for child node
-        cuda_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
-
-        ros::Time after_cuda_call = ros::Time::now();
-//        std::cout<<"Cuda time : "<<(after_cuda_call-after_child_nodes).toSec()<<std::endl;
-
-        // Add generated child nodes in priority queue
-        for (auto& node : m_overall_info->mp_info.curr_eval_nodes)
+        if (m_planner_failed == false)
         {
-            if (node.safe)
+            m_overall_info->mp_info.planned_path.clear ();
+            while (all_nodes.size() > 1 && curr_node.parent_index != 1)
             {
-                ++node_num;
-                node.node_index = node_num;
-                all_nodes[node_num] = node;
-
-                priority_queue.push (node);
+                m_overall_info->mp_info.planned_path.push_back(curr_node);
+                curr_node = all_nodes[curr_node.parent_index];
             }
+
+            // Save the current best node for execution
+            m_overall_info->mp_info.curr_best_node = curr_node;
         }
 
-        ros::Time after_child_nodes_management = ros::Time::now();
+        // Brake if path cannot be planned
+        if ( (m_overall_info->mp_info.planned_path.empty()) ||
+             (m_planner_failed == true) )
+        {
+            m_planner_failed = true;
+            m_overall_info->mp_info.curr_best_node = start;
+            m_overall_info->mp_info.curr_best_node.accel = m_cfg.braking_accel;
+        }
 
-//        std::cout<<"Child node management : "<<(after_child_nodes_management-after_cuda_call).toSec()<<std::endl;
-
-        count++;
+        ros::Time end_time = ros::Time::now();
+        std::cout<<"\nPlan Path Execution time : "<<(end_time-start_time).toSec()<<std::endl;
     }
-
-    m_overall_info->mp_info.planned_path.clear ();
-    while (all_nodes.size() > 1 && curr_node.parent_index != 1)
-    {
-        m_overall_info->mp_info.planned_path.push_back(curr_node);
-        curr_node = all_nodes[curr_node.parent_index];
-    }
-
-    // Save the current best node for execution
-    m_overall_info->mp_info.curr_best_node = curr_node;
 }
 
 void NonholonomicAStar::addToOpenList (const Node& node)

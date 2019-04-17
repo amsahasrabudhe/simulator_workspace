@@ -6,6 +6,8 @@
 #include <eigen3/unsupported/Eigen/Splines>
 #include <iostream>
 #include <queue>
+#include <ros/ros.h>
+#include <ros/time.h>
 #include <string>
 
 #include "lib/configs/PlannerConfig.hpp"
@@ -19,7 +21,7 @@ class NonholonomicAStar
     public:     /// functions
 
         /// @brief
-        NonholonomicAStar(const std::shared_ptr<OverallInfo>& overall_info, const PlannerConfig& cfg);
+        NonholonomicAStar(const ros::NodeHandle& nh, const std::shared_ptr<OverallInfo>& overall_info, const PlannerConfig& cfg);
 
         /// @brief
         void initialize();
@@ -30,7 +32,7 @@ class NonholonomicAStar
     private:
 
         /// @brief
-        void planPath();
+        void planPath(const ros::TimerEvent& event);
 
         /// @brief
         void addToOpenList(const Node& node);
@@ -49,8 +51,14 @@ class NonholonomicAStar
 
     private:     /// variables
 
+        ros::NodeHandle                 m_nh;
+
         std::shared_ptr<OverallInfo>    m_overall_info;
         PlannerConfig                   m_cfg;
+
+        ros::Timer                      m_plan_path_timer;
+
+        bool                            m_planner_failed;
 
         std::vector<Node>               m_open_list;
         std::vector<Node>               m_closed_list;

@@ -3,8 +3,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand_kernel.h>
-#include <ros/ros.h>
-#include <ros/time.h>
 
 #include "astar/Node.hpp"
 #include "lib/helper_functions/boost_geometry_helper_functions.hpp"

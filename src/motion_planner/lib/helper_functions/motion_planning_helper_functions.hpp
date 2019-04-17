@@ -14,48 +14,50 @@ std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
 {
     std::vector<Node> children;
 
-    for (double steering_change = -15; steering_change <= 15; steering_change += 5)
+    for (double steering_change = -15; steering_change <= 15; steering_change += 2.5)
     {
-        mp::Node child;        
+        //for (double accel = -0.2; accel <= 0.2; accel += 0.2)
+        //{
+            mp::Node child;
 
-        double dt = 0.5;    ///< seconds
+            double dt = config.child_node_dt;    ///< seconds
 
-        double curr_theta = parent.pose.theta;
-        double curr_vel = parent.vel;
+            double curr_theta = parent.pose.theta;
+            double curr_vel = parent.vel;
 
-        /// Add steering change to update steering angle for each child node
-        double curr_steering = parent.steering + steering_change*toRadians;
-        child.steering = curr_steering;
+            /// Add steering change to update steering angle for each child node
+            double curr_steering = parent.steering + steering_change*toRadians;
+            child.steering = curr_steering;
 
-        if (child.steering > config.max_steering_rad)
-            child.steering = config.max_steering_rad;
+            if (child.steering > config.max_steering_rad)
+                child.steering = config.max_steering_rad;
 
-        double beta = dt * curr_vel * tan(curr_steering) / config.wheel_base;
-        double R = dt * curr_vel / beta;
+            double beta = dt * curr_vel * tan(curr_steering) / config.wheel_base;
+            double R = dt * curr_vel / beta;
 
-        if (fabs(beta) > 0.001)
-        {
-            child.pose.x = parent.pose.x + (sin(curr_theta+beta) - sin(curr_theta))*R;
-            child.pose.y = parent.pose.y + (cos(curr_theta) - cos(curr_theta+beta))*R;
-            child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
-        }
-        else
-        {
-            child.pose.x = parent.pose.x + dt * curr_vel * cos(curr_theta);
-            child.pose.y = parent.pose.y + dt * curr_vel * sin(curr_theta);
-            child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
-        }
+            if (fabs(beta) > 0.001)
+            {
+                child.pose.x = parent.pose.x + (sin(curr_theta+beta) - sin(curr_theta))*R;
+                child.pose.y = parent.pose.y + (cos(curr_theta) - cos(curr_theta+beta))*R;
+                child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
+            }
+            else
+            {
+                child.pose.x = parent.pose.x + dt * curr_vel * cos(curr_theta);
+                child.pose.y = parent.pose.y + dt * curr_vel * sin(curr_theta);
+                child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
+            }
 
-        child.vel = parent.vel + dt * parent.accel;
+            child.vel = parent.vel + dt * parent.accel;
 
-        // TODO Add accel change
+            //child.accel = accel;
 
-        const double gx = child.distFrom(parent);
+            const double gx = child.distFrom(parent);
 
-        child.setParentIndex(parent.node_index);
-        child.setGx(gx + parent.gx);
+            child.setParentIndex(parent.node_index);
 
-        children.push_back( child );
+            children.push_back( child );
+        //}
     }
 
     return children;

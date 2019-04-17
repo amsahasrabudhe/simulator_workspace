@@ -26,7 +26,7 @@ void PlannerROSInterface::initialize()
 
     setupEgoVehicle();
 
-    m_parallel_mp_algo = std::make_shared<NonholonomicAStar>(m_overall_info, m_config);
+    m_parallel_mp_algo = std::make_shared<NonholonomicAStar>(m_nh, m_overall_info, m_config);
     m_parallel_mp_algo->initialize();
 
     m_visualizer = std::make_shared<PlannerVisualizer>(m_nh, m_overall_info, m_config);
@@ -130,7 +130,7 @@ void PlannerROSInterface::updateEgoVehicleState()
 
     double curr_theta = m_overall_info->ego_state->pose.theta;
     double curr_steering = m_overall_info->mp_info.curr_best_node.steering;
-    double curr_vel = m_overall_info->mp_info.curr_best_node.vel;
+    double curr_vel = m_overall_info->ego_state->vel;
 
     double beta = dt * curr_vel * tan(curr_steering) / m_config.wheel_base;
     double R = dt * curr_vel / beta;
@@ -149,6 +149,10 @@ void PlannerROSInterface::updateEgoVehicleState()
     }
 
     m_overall_info->ego_state->vel += dt * m_overall_info->mp_info.curr_best_node.accel;
+
+    // Set velocity to zero if braking activated
+    if (m_overall_info->ego_state->vel < 0)
+        m_overall_info->ego_state->vel = 0;
 }
 
 void PlannerROSInterface::broadcastTransforms()

@@ -21,13 +21,16 @@ struct PlannerConfig
             max_accel_mpss(4.0),
             max_jerk_mpsss(1.0),
             max_steering_rad(0.698132),
+            braking_accel(-0.75),
             poly_fit_degree(3),
             poly_fit_min_lane_points(10),
             poly_fit_lane_points_behind_veh(1),
             poly_fit_speed_scale_factor(2.0),
             threads_per_block(32),
-            dist_to_goal(4.5),
-            update_time_s(0.05)
+            dist_to_goal(10.0),
+            child_node_dt(1.25),
+            update_time_s(0.05),
+            plan_path_time_s(0.75)
         {
 
         }
@@ -49,6 +52,8 @@ struct PlannerConfig
         double          max_jerk_mpsss;                 ///< Maximum jerk
         double          max_steering_rad;               ///< Maximum steering angle in radians
 
+        double          braking_accel;                  ///< Braking accel value
+
         /// Curve fitting configs
         std::uint8_t    poly_fit_degree;                    ///< Degree
         std::size_t     poly_fit_min_lane_points;           ///< Min number of lane points used for curve fitting
@@ -58,7 +63,9 @@ struct PlannerConfig
         std::size_t     threads_per_block;
         double          dist_to_goal;
 
-        double          update_time_s;                  ///< Planner algorithm update time
+        double          child_node_dt;                  ///< dt used for child node creation
+        double          update_time_s;                  ///< Planner update time
+        double          plan_path_time_s;               ///< Plan path call time
 };
 
 }
