@@ -139,13 +139,19 @@ void calculate_cost(std::size_t threads_per_block,
     bool inside_road_boundary = isNodeInsideRoad(child_node_polygon_points, road_polygon, road_polygon_point_count);
 
     if (!inside_road_boundary)
+    {
+        curr_child_node->not_on_road = true;
         curr_child_node->hx += 50;
+    }
 
     // Calculate cost of collision
     bool node_collides = nodeCollidesWithTraffic (child_node_polygon_points, traffic_polygons, traffic_veh_count);
 
     if (node_collides)
+    {
+        curr_child_node->is_colliding = true;
         curr_child_node->hx += 50;
+    }
 
     // Calculate cost of lane offset
     curr_child_node->hx += fabs(curr_child_node->pose.y - lane_center_y);
@@ -157,9 +163,6 @@ void calculate_cost(std::size_t threads_per_block,
 
     // Distance from goal heuristic
     curr_child_node->hx += dist_to_goal - dist_from_start;
-
-    if (!inside_road_boundary || node_collides)
-        curr_child_node->safe = false;
 }
 
 /***********************************HOST FUNCTIONS****************************************/
@@ -218,7 +221,8 @@ void calculateCost(std::vector<mp::Node>& child_nodes, const mp::PlannerConfig& 
     cudaMemcpy (device_traffic_polygons_array, host_traffic_polygons_array, total_traffic_polygons_size, cudaMemcpyHostToDevice);
     checkCudaError ( "Traffic polygons array memCopy booommm!!!!" );
 
-    double lane_center_y = overall_info->nearest_lane_point_with_index.second.y;
+    const mp::LaneInfo& lane = overall_info->road_info.lanes.at( overall_info->mp_info.desired_lane );
+    double lane_center_y = lane.lane_points.at( overall_info->nearest_lane_point_with_index.first ).y;
 
     std::size_t num_blocks = static_cast<std::size_t>( ceil( child_nodes.size()/static_cast<double>(config.threads_per_block) ) );
 

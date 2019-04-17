@@ -19,6 +19,9 @@ void NonholonomicAStar::initialize()
     // Find current lane
     localize( m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first );
 
+    // Set currrent lane as desired lane on initialize
+    m_overall_info->mp_info.desired_lane = m_overall_info->mp_info.current_lane;
+
     m_plan_path_timer = m_nh.createTimer(ros::Duration(m_cfg.plan_path_time_s), &NonholonomicAStar::planPath, this);
     m_plan_path_timer.start();
 }
@@ -109,10 +112,16 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& event)
             ros::Time after_cuda_call = ros::Time::now();
     //        std::cout<<"Cuda time : "<<(after_cuda_call-after_child_nodes).toSec()<<std::endl;
 
+            bool obstacle_found = false;
+
+            const mp::LaneInfo& lane = m_overall_info->road_info.lanes.at( m_overall_info->mp_info.desired_lane );
+            const double lane_center_y = lane.lane_points.at( m_overall_info->nearest_lane_point_with_index.first ).y;
+
             // Add generated child nodes in priority queue
             for (auto& node : m_overall_info->mp_info.curr_eval_nodes)
             {
-                if (node.safe)
+                // Check if the node is safe
+                if ( node.not_on_road == false && node.is_colliding == false )
                 {
                     ++node_num;
                     node.node_index = node_num;
@@ -120,7 +129,41 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& event)
 
                     priority_queue.push (node);
                 }
+                else if (node.is_colliding)
+                {
+                    // TODO : Use offset from lane near the node's pose instead of this hack!!! 
+                    
+                    // Check if obstacle is in our way
+                    if (fabs(node.pose.y - lane_center_y) < 0.2)
+                        obstacle_found = true;
+                    //break;    // Not sure if break is required
+                }
             }
+
+            // Change desired lane if obstacle found
+            if (obstacle_found)
+            {
+                std::size_t total_lanes = m_overall_info->road_info.num_lanes;
+                std::size_t curr_lane_id = m_overall_info->mp_info.current_lane;
+
+                if (curr_lane_id == (total_lanes - 1) )
+                {
+                    // Lane change left if no lane is available on the right side
+                    m_overall_info->mp_info.desired_lane = curr_lane_id - 1;
+                }
+                else if (curr_lane_id == 0)
+                {
+                    // Lane change right if no lane is available on the left side
+                    m_overall_info->mp_info.desired_lane = curr_lane_id + 1;
+                }
+                else
+                {
+                    m_overall_info->mp_info.desired_lane = curr_lane_id - 1;
+                }
+                
+                //break;    // Not sure if break is required
+            }
+
 
             ros::Time after_child_nodes_management = ros::Time::now();
 
@@ -213,7 +256,7 @@ std::vector<Pose2D> NonholonomicAStar::getLanePointsForPolyFit()
     std::size_t count = 0;
     std::size_t first_pt = m_overall_info->nearest_lane_point_with_index.first - m_cfg.poly_fit_lane_points_behind_veh;
 
-    LaneInfo curr_lane = m_overall_info->road_info.lanes[m_overall_info->mp_info.current_lane];
+    LaneInfo curr_lane = m_overall_info->road_info.lanes[m_overall_info->mp_info.desired_lane];
     while (count < m_cfg.poly_fit_min_lane_points && (first_pt + count) <= curr_lane.lane_points.size() )
     {
         Pose2D point;

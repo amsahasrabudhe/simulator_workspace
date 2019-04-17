@@ -24,7 +24,8 @@ struct Node
             accel(accel),
             gx(0.0),
             hx(0.0),
-            safe(true),
+            not_on_road(false),
+            is_colliding(false),
             node_index(index),
             parent_index(0)
         {
@@ -72,7 +73,8 @@ struct Node
         double gx;
         double hx;
 
-        bool   safe;
+        bool   not_on_road;
+        bool   is_colliding;
 
         uint   node_index;
         uint   parent_index;
