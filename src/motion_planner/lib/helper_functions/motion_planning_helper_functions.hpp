@@ -3,7 +3,6 @@
 #ifndef MOTION_PLANNING_HELPER_FUNCTIONS_HPP
 #define MOTION_PLANNING_HELPER_FUNCTIONS_HPP
 
-#include "boost_geometry_helper_functions.hpp"
 #include <lib/algorithm/astar/Node.hpp>
 #include <lib/configs/PlannerConfig.hpp>
 

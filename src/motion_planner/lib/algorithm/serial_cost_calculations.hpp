@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "astar/Node.hpp"
-#include "lib/helper_functions/motion_planning_helper_functions.hpp"
+#include "lib/configs/PlannerConfig.hpp"
 #include "lib/types/OverallInfo.hpp"
 #include "lib/types/Vec2D.hpp"
 

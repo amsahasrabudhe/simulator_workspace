@@ -1,6 +1,7 @@
 ﻿
 #include "NonholonomicAStar.hpp"
-#include "parallel_cost_calculations.cuh"
+#include "lib/algorithm/parallel_cost_calculations.cuh"
+#include "lib/algorithm/serial_cost_calculations.hpp"
 
 namespace mp
 {
@@ -63,18 +64,17 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& event)
         while ( !priority_queue.empty() )
         {
             // Cancel path planning if its taking long time
-            if ((ros::Time::now() - start_time).toSec() > 1.0)
+            if ((ros::Time::now() - start_time).toSec() > m_cfg.plan_path_time_s)
             {
                 m_planner_failed = true;
                 break;
             }
 
+            ros::Time before_child_nodes = ros::Time::now();
+
             std::vector<mp::Node> total_child_nodes;
 
             bool dist_covered = false;
-
-            ros::Time before_child_nodes = ros::Time::now();
-
             uint i = 0;
             while (i < 15 && !priority_queue.empty())
             {
@@ -107,7 +107,8 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& event)
     //        std::cout<<"Child node generation : "<<(after_child_nodes-before_child_nodes).toSec()<<std::endl;
 
             // Calculate cost for child node
-            cuda_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
+//            cuda_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
+            serial_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
 
             ros::Time after_cuda_call = ros::Time::now();
     //        std::cout<<"Cuda time : "<<(after_cuda_call-after_child_nodes).toSec()<<std::endl;
@@ -180,6 +181,9 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& event)
                 m_overall_info->mp_info.planned_path.push_back(curr_node);
                 curr_node = all_nodes[curr_node.parent_index];
             }
+
+            std::reverse(m_overall_info->mp_info.planned_path.begin(),
+                         m_overall_info->mp_info.planned_path.end());
 
             // Save the current best node for execution
             m_overall_info->mp_info.curr_best_node = curr_node;
