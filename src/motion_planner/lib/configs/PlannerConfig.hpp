@@ -17,18 +17,19 @@ struct PlannerConfig
             ego_veh_state_out_topic("/ego_veh_state"),
             traffic_veh_states_in_topic("/traffic_veh_states"),
             visualization_topic("/planner/visualization"),
+            planned_path_topic("/planner/planned_path"),
             max_vel_mps(17.8816),
             max_accel_mpss(4.0),
             max_jerk_mpsss(1.0),
             max_steering_rad(0.698132),
-            braking_accel(-0.75),
+            braking_accel(-1.0),
             poly_fit_degree(3),
             poly_fit_min_lane_points(10),
             poly_fit_lane_points_behind_veh(1),
             poly_fit_speed_scale_factor(2.0),
-            threads_per_block(32),
-            dist_to_goal(8.0),
-            child_node_dt(1.25),
+            threads_per_block(128),
+            dist_to_goal(12.0),
+            child_node_dt(1.0),
             update_time_s(0.05),
             plan_path_time_s(0.75)
         {
@@ -45,6 +46,8 @@ struct PlannerConfig
         std::string     ego_veh_state_out_topic;        ///< Topic name to publish ego vehicle state
         std::string     traffic_veh_states_in_topic;    ///< Topic name to receive traffic vehicle information
         std::string     visualization_topic;            ///< Topic name to publish visualization messages
+        std::string     planned_path_topic;             ///< Topic name to publish planned path
+
 
         /// Max value configs
         double          max_vel_mps;                    ///< Maximum velocity

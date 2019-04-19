@@ -1,3 +1,6 @@
+#ifndef PARALLEL_COST_CALCULATIONS_CUH
+#define PARALLEL_COST_CALCULATIONS_CUH
+
 #include <stdio.h>
 
 #include <cuda.h>
@@ -20,3 +23,5 @@ namespace cuda_mp
 
     std::vector<mp::Vec2D> getTrafficPolygons(const std::vector<mp::Vehicle>& traffic);
 }
+
+#endif //PARALLEL_COST_CALCULATIONS_CUH

@@ -94,8 +94,9 @@ cuda_add_library( cuda_mp ${LIB_TYPE}
 ##################################################
 
 set( lib_headers
-    lib/algorithm/NonholonomicAStar.hpp
+    lib/algorithm/astar/NonholonomicAStar.hpp
     lib/algorithm/astar/Node.hpp
+    lib/algorithm/serial_cost_calculations.hpp
 
     lib/configs/PlannerConfig.hpp
 
@@ -113,15 +114,16 @@ set( lib_headers
 )
 
 set( lib_source
-    lib/algorithm/NonholonomicAStar.cpp
+    lib/algorithm/astar/NonholonomicAStar.cpp
+    lib/algorithm/serial_cost_calculations.cpp
 )
 
-add_library( parallel_mp
+add_library( mp
     ${lib_headers}
     ${lib_source}
 )
 
-target_link_libraries(parallel_mp
+target_link_libraries(mp
     cuda_mp
 )
 
@@ -131,10 +133,10 @@ set( libraries
     ${Boost_LIBRARIES}
     ${catkin_LIBRARIES}
     ${CUDA_LIBRARIES}
-    parallel_mp
+    mp
 )
 
-add_dependencies(motion_planner parallel_mp)
+add_dependencies(motion_planner mp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(motion_planner
@@ -152,7 +154,7 @@ install( TARGETS motion_planner
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
-install( TARGETS parallel_mp
+install( TARGETS mp
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

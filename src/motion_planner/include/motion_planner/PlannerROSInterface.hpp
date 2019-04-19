@@ -4,7 +4,7 @@
 #define PLANNER_ROS_INTERFACE_HPP
 
 #include "PlannerVisualizer.hpp"
-#include "lib/algorithm/NonholonomicAStar.hpp"
+#include "lib/algorithm/astar/NonholonomicAStar.hpp"
 
 #include <lib/types/OverallInfo.hpp>
 #include <lib/configs/PlannerConfig.hpp>

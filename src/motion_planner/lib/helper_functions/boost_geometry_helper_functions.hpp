@@ -4,9 +4,6 @@
 #define BOOST_GEOMETRY_HELPER_FUNCTIONS_HPP
 
 #include <boost/assign.hpp>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <curand_kernel.h>
 
 #include <lib/types/RoadInfo.hpp>
 #include <lib/types/Vehicle.hpp>

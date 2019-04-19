@@ -21,13 +21,17 @@ void PlannerVisualizer::initialize()
     m_vis_msg = boost::make_shared<visualization_msgs::MarkerArray>();
 
     m_visualization_pub = m_nh.advertise<visualization_msgs::MarkerArray>(m_cfg.visualization_topic, 1, false);
+
+    m_path_pub = m_nh.advertise<nav_msgs::Path>(m_cfg.planned_path_topic, 1, false);
 }
 
 void PlannerVisualizer::update()
 {
     addVisualization();
-
     m_visualization_pub.publish(m_vis_msg);
+
+    addPlannedPathSplineVis();
+    m_path_pub.publish(m_planned_path_msg);
 }
 
 void PlannerVisualizer::addVisualization()
@@ -297,7 +301,7 @@ void PlannerVisualizer::addEgoPolygonVis()
 void PlannerVisualizer::addCurrChildNodesVis()
 {
     // Draw child nodes evaulated in the recent update cycle
-    for (std::size_t i = 0; i < m_overall_info->mp_info.planned_path.size() ; ++i)
+    for (std::size_t i = 0; i < m_overall_info->mp_info.curr_eval_nodes.size() ; ++i)
     {
         visualization_msgs::Marker child_node;
 
@@ -309,20 +313,20 @@ void PlannerVisualizer::addCurrChildNodesVis()
         child_node.action = visualization_msgs::Marker::ADD;
         child_node.ns     = "curr_child_nodes";
 
-        child_node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
-        child_node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
+        child_node.pose.position.x = m_overall_info->mp_info.curr_eval_nodes[i].pose.x + cos(m_overall_info->mp_info.curr_eval_nodes[i].pose.theta) * m_cfg.wheel_base/2;
+        child_node.pose.position.y = m_overall_info->mp_info.curr_eval_nodes[i].pose.y + sin(m_overall_info->mp_info.curr_eval_nodes[i].pose.theta) * m_cfg.wheel_base/2;
         child_node.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.theta);
+        q.setRPY(0, 0, m_overall_info->mp_info.curr_eval_nodes[i].pose.theta);
 
         child_node.pose.orientation.x = q.x();
         child_node.pose.orientation.y = q.y();
         child_node.pose.orientation.z = q.z();
         child_node.pose.orientation.w = q.w();
 
-        child_node.scale.x = m_overall_info->ego_state->length;
-        child_node.scale.y = m_overall_info->ego_state->width;
+        child_node.scale.x = 0.1;
+        child_node.scale.y = 0.1;
         child_node.scale.z = 0.1/*m_cfg.height*/;
 
         child_node.color.r = 1.0;
@@ -339,7 +343,7 @@ void PlannerVisualizer::addCurrChildNodesVis()
 
 void PlannerVisualizer::addPlannedPathVis()
 {
-    // Draw child nodes evaulated in the recent update cycle
+    // Draw planned path
     for (std::size_t i = 0; i < m_overall_info->mp_info.planned_path.size() ; ++i)
     {
         visualization_msgs::Marker node;
@@ -354,7 +358,7 @@ void PlannerVisualizer::addPlannedPathVis()
 
         node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
         node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
-        node.pose.position.z = m_cfg.height / 2;
+        node.pose.position.z = m_cfg.height/2 - 0.1;
 
         tf2::Quaternion q;
         q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.theta);
@@ -377,6 +381,57 @@ void PlannerVisualizer::addPlannedPathVis()
         node.frame_locked = true;
 
         m_vis_msg->markers.push_back(node);
+    }
+}
+
+void PlannerVisualizer::addPlannedPathSplineVis()
+{
+    m_planned_path_msg = boost::make_shared<nav_msgs::Path>();
+
+    m_planned_path_msg->header.frame_id = "world_origin";
+    m_planned_path_msg->header.stamp = ros::Time::now ();
+
+    // Add current state
+    geometry_msgs::PoseStamped curr_state;
+
+    curr_state.header.stamp = ros::Time::now();
+    curr_state.header.frame_id = "world_origin";
+
+    curr_state.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.theta) * m_cfg.wheel_base/2;
+    curr_state.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.theta) * m_cfg.wheel_base/2;
+    curr_state.pose.position.z = m_cfg.height / 2;
+
+    tf2::Quaternion q;
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.theta);
+
+    curr_state.pose.orientation.x = q.x();
+    curr_state.pose.orientation.y = q.y();
+    curr_state.pose.orientation.z = q.z();
+    curr_state.pose.orientation.w = q.w();
+
+    m_planned_path_msg->poses.push_back(curr_state);
+
+    // Add planned path
+    for (std::size_t i = 0; i < m_overall_info->mp_info.planned_path.size() ; ++i)
+    {
+        geometry_msgs::PoseStamped node;
+
+        node.header.stamp = ros::Time::now() + ros::Duration( (i+1)*m_cfg.child_node_dt );
+        node.header.frame_id = "world_origin";
+
+        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
+        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
+        node.pose.position.z = m_cfg.height / 2;
+
+        tf2::Quaternion q;
+        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.theta);
+
+        node.pose.orientation.x = q.x();
+        node.pose.orientation.y = q.y();
+        node.pose.orientation.z = q.z();
+        node.pose.orientation.w = q.w();
+
+        m_planned_path_msg->poses.push_back(node);
     }
 }
 

@@ -8,6 +8,7 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <nav_msgs/Path.h>
 
 namespace mp
 {
@@ -38,15 +39,19 @@ class PlannerVisualizer
         void addPlannedPathVis();
         void addCurrChildNodesVis();
 
+        void addPlannedPathSplineVis();
+
     private:
         ros::NodeHandle                                     m_nh;
 
         ros::Publisher                                      m_visualization_pub;
+        ros::Publisher                                      m_path_pub;
 
         PlannerConfig                                       m_cfg;
         std::shared_ptr<OverallInfo>                        m_overall_info;
 
         boost::shared_ptr<visualization_msgs::MarkerArray>  m_vis_msg;
+        boost::shared_ptr<nav_msgs::Path>                   m_planned_path_msg;
 };
 
 }

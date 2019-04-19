@@ -1,5 +1,5 @@
 <launch>
-    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find simulator)/rviz/sim.rviz" />
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find simulator)/rviz/sim_path.rviz" />
     
     <node name="simulator" pkg="simulator" type="run_simulation.py" output="screen" cwd="node">
         <rosparam command="load" file="$(find simulator)/launch/simulator_params.yaml" />
