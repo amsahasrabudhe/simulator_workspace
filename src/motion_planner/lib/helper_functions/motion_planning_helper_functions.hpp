@@ -16,8 +16,8 @@ std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
 
     for (double steering_change = -15; steering_change <= 15; steering_change += 2.5)
     {
-        //for (double accel = -0.2; accel <= 0.2; accel += 0.2)
-        //{
+        for (double accel = -0.1; accel <= 0.1; accel += 0.05)
+        {
             mp::Node child;
 
             double dt = config.child_node_dt;    ///< seconds
@@ -49,15 +49,14 @@ std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
             }
 
             child.vel = parent.vel + dt * parent.accel;
+            child.accel = accel;
 
-            //child.accel = accel;
-
-            const double gx = child.distFrom(parent);
+//            const double gx = child.distFrom(parent);
 
             child.setParentIndex(parent.node_index);
 
             children.push_back( child );
-        //}
+        }
     }
 
     return children;
