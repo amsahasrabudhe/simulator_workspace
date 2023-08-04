@@ -1,7 +1,7 @@
 ﻿
 #include "NonholonomicAStar.hpp"
-#include "lib/algorithm/parallel_cost_calculations.cuh"
 #include "lib/algorithm/serial_cost_calculations.hpp"
+#include "lib/helper_functions/motion_planning_helper_functions.hpp"
 
 namespace mp
 {
@@ -37,7 +37,7 @@ void NonholonomicAStar::update()
 
 }
 
-void NonholonomicAStar::planPath(const ros::TimerEvent& event)
+void NonholonomicAStar::planPath(const ros::TimerEvent& /*event*/)
 {
     if (m_planner_failed == false)
     {
@@ -104,14 +104,12 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& event)
 
             ros::Time after_child_nodes = ros::Time::now();
 
-    //        std::cout<<"Child node generation : "<<(after_child_nodes-before_child_nodes).toSec()<<std::endl;
+            std::cout<<"Child node generation : "<<(after_child_nodes-before_child_nodes).toSec()<<std::endl;
 
             // Calculate cost for child node
-//            cuda_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
             serial_mp::calculateCost(total_child_nodes, m_cfg, m_overall_info);
 
-            ros::Time after_cuda_call = ros::Time::now();
-    //        std::cout<<"Cuda time : "<<(after_cuda_call-after_child_nodes).toSec()<<std::endl;
+            ros::Time after_cost_calcs = ros::Time::now();
 
             bool obstacle_found = false;
 
@@ -167,8 +165,7 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& event)
 
 
             ros::Time after_child_nodes_management = ros::Time::now();
-
-    //        std::cout<<"Child node management : "<<(after_child_nodes_management-after_cuda_call).toSec()<<std::endl;
+            std::cout<<"Child node management : "<<(after_child_nodes_management-after_cost_calcs).toSec()<<std::endl;
 
             count++;
         }
@@ -203,25 +200,24 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& event)
     }
 }
 
-void NonholonomicAStar::addToOpenList (const Node& node)
+void NonholonomicAStar::addToOpenList (const Node& /*node*/)
 {
 
 }
 
-void NonholonomicAStar::addToClosedList (const Node& node)
+void NonholonomicAStar::addToClosedList (const Node& /*node*/)
 {
 
 }
 
-
-void NonholonomicAStar::localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index)
+void NonholonomicAStar::localize(const std::size_t /*known_current_lane*/, const std::size_t known_nearest_lane_point_index)
 {
     std::size_t curr_lane = 0;
     std::pair<std::uint32_t, Pose2D> nearest_lane_point;
 
     // TODO: Optimize localize function to find nearest point
 
-    double leastDist = 9999;
+    double leastDist = 9999.0;
     for (std::size_t i = 0; i < m_overall_info->road_info.num_lanes; ++i)
     {
         LaneInfo lane = m_overall_info->road_info.lanes[i];

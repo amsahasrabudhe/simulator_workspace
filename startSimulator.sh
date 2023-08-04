@@ -13,15 +13,15 @@ echo "Killing all existing screens"
 stop_screens
 
 #echo "Starting roscore"
-#screen -d -m -S roscore bash -c "source install/setup.bash ; roscore; exec bash"
+#screen -d -m -S roscore bash -c "source devel/setup.bash ; roscore; exec bash"
 
 echo "Starting vehicle_description"
-screen -d -m -S vehicle_description bash -c "source install/setup.bash ; roslaunch vehicle_description vehicle_description.launch ; exec bash"
+screen -d -m -S vehicle_description bash -c "source devel/setup.bash ; roslaunch vehicle_description vehicle_description.launch ; exec bash"
 
 echo "Starting simulator node"
-screen -d -m -S simulator bash -c "source install/setup.bash ; roslaunch simulator simulator.launch ; exec bash"
+screen -d -m -S simulator bash -c "source devel/setup.bash ; roslaunch simulator simulator.launch ; exec bash"
 
 sleep 2.5
 
 echo "Starting motion_planner node"
-screen -d -m -S motion_planner bash -c "source install/setup.bash ; roslaunch motion_planner motion_planner.launch ; exec bash"
+screen -d -m -S motion_planner bash -c "source devel/setup.bash ; roslaunch motion_planner motion_planner.launch ; exec bash"

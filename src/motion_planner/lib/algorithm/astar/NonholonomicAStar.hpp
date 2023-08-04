@@ -41,7 +41,7 @@ class NonholonomicAStar
         void addToClosedList(const Node& node);
 
         /// @brief
-        void localize(const std::size_t& known_current_lane, const std::size_t& known_nearest_lane_point_index);
+        void localize(const std::size_t known_current_lane, const std::size_t known_nearest_lane_point_index);
 
         /// @brief
         Eigen::Spline3d getSpline( const std::vector<Pose2D>& points );

@@ -31,19 +31,19 @@ std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
             if (child.steering > config.max_steering_rad)
                 child.steering = config.max_steering_rad;
 
-            double beta = dt * curr_vel * tan(curr_steering) / config.wheel_base;
+            double beta = dt * curr_vel * std::tan(curr_steering) / config.wheel_base;
             double R = dt * curr_vel / beta;
 
-            if (fabs(beta) > 0.001)
+            if (std::fabs(beta) > 0.001)
             {
-                child.pose.x = parent.pose.x + (sin(curr_theta+beta) - sin(curr_theta))*R;
-                child.pose.y = parent.pose.y + (cos(curr_theta) - cos(curr_theta+beta))*R;
+                child.pose.x = parent.pose.x + (std::sin(curr_theta+beta) - std::sin(curr_theta))*R;
+                child.pose.y = parent.pose.y + (std::cos(curr_theta) - std::cos(curr_theta+beta))*R;
                 child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
             }
             else
             {
-                child.pose.x = parent.pose.x + dt * curr_vel * cos(curr_theta);
-                child.pose.y = parent.pose.y + dt * curr_vel * sin(curr_theta);
+                child.pose.x = parent.pose.x + dt * curr_vel * std::cos(curr_theta);
+                child.pose.y = parent.pose.y + dt * curr_vel * std::sin(curr_theta);
                 child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
             }
 

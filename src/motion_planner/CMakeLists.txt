@@ -1,10 +1,6 @@
 ﻿cmake_minimum_required(VERSION 2.8.3)
 project(motion_planner)
 
-set(CXX g++-4.9)
-set(C gcc-4.9)
-
-find_package(CUDA REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 
@@ -28,10 +24,6 @@ set( CMAKE_MODULE_PATH
 )
 
 include( MotionPlanning )
-
-set(CMAKE_CUDA_COMPILER /usr/local/cuda-9.0/bin/nvcc)
-set(CUDA_NVCC_FLAGS "-arch=sm_61" CACHE STRING "nvcc flags" FORCE)
-set(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
 set(LIB_TYPE SHARED)
 
 ###################################
@@ -78,21 +70,6 @@ add_executable(motion_planner
 
 ##################################################
 
-set( cuda_lib_headers
-    lib/algorithm/parallel_cost_calculations.cuh
-)
-
-set( cuda_lib_source
-    lib/algorithm/parallel_cost_calculations.cu
-)
-
-cuda_add_library( cuda_mp ${LIB_TYPE}
-    ${cuda_lib_headers}
-    ${cuda_lib_source}
-)
-
-##################################################
-
 set( lib_headers
     lib/algorithm/astar/NonholonomicAStar.hpp
     lib/algorithm/astar/Node.hpp
@@ -123,16 +100,11 @@ add_library( mp
     ${lib_source}
 )
 
-target_link_libraries(mp
-    cuda_mp
-)
-
 ##################################################
 
 set( libraries
     ${Boost_LIBRARIES}
     ${catkin_LIBRARIES}
-    ${CUDA_LIBRARIES}
     mp
 )
 
@@ -155,12 +127,6 @@ install( TARGETS motion_planner
  )
 
 install( TARGETS mp
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
-
-install( TARGETS cuda_mp
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
