@@ -40,7 +40,7 @@ void PlannerROSInterface::initialize()
     m_update_timer.start();
 }
 
-void PlannerROSInterface::update(const ros::TimerEvent& event)
+void PlannerROSInterface::update(const ros::TimerEvent& /*event*/)
 {
     /// Update parallel motion planner algorithm
     m_parallel_mp_algo->update();
@@ -74,7 +74,7 @@ void PlannerROSInterface::loadSceneDetailsFromParameterServer()
     double lane_width = m_nh.param("/sim_scene_data/lane_width", 0.0);
 
     XmlRpc::XmlRpcValue value;
-    m_nh.param("/sim_scene_data/lane_info", value, value);
+    m_nh.param("/sim_scene_data/lanes", value, value);
 
     for (std::int8_t i = 0; i < value.size(); ++i)
     {
@@ -89,7 +89,7 @@ void PlannerROSInterface::loadSceneDetailsFromParameterServer()
         {
             XmlRpc::XmlRpcValue lane_point_xml = value[i]["lane_points"][j];
 
-            Pose2D lane_point(lane_point_xml["x"], lane_point_xml["y"], lane_point_xml["theta"]);
+            Pose2D lane_point(lane_point_xml["x"], lane_point_xml["y"], lane_point_xml["heading"]);
             lane.lane_points.push_back(lane_point);
         }
 
@@ -106,7 +106,7 @@ void PlannerROSInterface::setupEgoVehicle()
     /// Load initial values from scene information on parameter server
     double init_x = m_nh.param("/sim_scene_data/ego_veh_pose/x", 0.0);
     double init_y = m_nh.param("/sim_scene_data/ego_veh_pose/y", 0.0);
-    double init_theta = m_nh.param("/sim_scene_data/ego_veh_pose/theta", 0.0);
+    double init_theta = m_nh.param("/sim_scene_data/ego_veh_pose/heading", 0.0);
 
     m_overall_info->ego_state->setPose(init_x, init_y, init_theta);
     
@@ -128,7 +128,7 @@ void PlannerROSInterface::updateEgoVehicleState()
 
     m_last_update_time = now;
 
-    double curr_theta = m_overall_info->ego_state->pose.theta;
+    double curr_theta = m_overall_info->ego_state->pose.heading;
     double curr_steering = m_overall_info->mp_info.curr_best_node.steering;
     double curr_vel = m_overall_info->ego_state->vel;
 
@@ -139,13 +139,13 @@ void PlannerROSInterface::updateEgoVehicleState()
     {
         m_overall_info->ego_state->pose.x += (sin(curr_theta+beta) - sin(curr_theta))*R;
         m_overall_info->ego_state->pose.y += (cos(curr_theta) - cos(curr_theta+beta))*R;
-        m_overall_info->ego_state->pose.theta = fmod ((curr_theta+beta), 2*M_PI);
+        m_overall_info->ego_state->pose.heading = fmod ((curr_theta+beta), 2*M_PI);
     }
     else
     {
         m_overall_info->ego_state->pose.x += dt * curr_vel * cos(curr_theta);
         m_overall_info->ego_state->pose.y += dt * curr_vel * sin(curr_theta);
-        m_overall_info->ego_state->pose.theta = fmod ((curr_theta+beta), 2*M_PI);
+        m_overall_info->ego_state->pose.heading = fmod ((curr_theta+beta), 2*M_PI);
     }
 
     m_overall_info->ego_state->vel += dt * m_overall_info->mp_info.curr_best_node.accel;
@@ -169,7 +169,7 @@ void PlannerROSInterface::broadcastTransforms()
     world_origin_to_vehicle_origin.transform.translation.z = 0;
 
     tf2::Quaternion q;
-    q.setRPY(0, 0, m_overall_info->ego_state->pose.theta);
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading);
     world_origin_to_vehicle_origin.transform.rotation.x = q.x();
     world_origin_to_vehicle_origin.transform.rotation.y = q.y();
     world_origin_to_vehicle_origin.transform.rotation.z = q.z();
@@ -186,7 +186,7 @@ void PlannerROSInterface::publishEgoVehicleState()
 
     ros_ego_state.vehicle.pose.x        = m_overall_info->ego_state->pose.x;
     ros_ego_state.vehicle.pose.y        = m_overall_info->ego_state->pose.y;
-    ros_ego_state.vehicle.pose.theta    = m_overall_info->ego_state->pose.theta;
+    ros_ego_state.vehicle.pose.theta    = m_overall_info->ego_state->pose.heading;
 
     ros_ego_state.vehicle.vel           = m_overall_info->ego_state->vel;
     ros_ego_state.vehicle.accel         = m_overall_info->ego_state->accel;

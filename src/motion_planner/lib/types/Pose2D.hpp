@@ -28,36 +28,36 @@ class Pose2D
         Pose2D(const double& _x=0.0, const double& _y=0.0, const double& _theta=0.0):
             x(_x),
             y(_y),
-            theta(_theta)
+            heading(_theta)
         {
 
         }
 
         Pose2D operator+ (const Pose2D& other)
         {
-            return Pose2D(this->x+other.x, this->y+other.y, this->theta+other.theta);
+            return Pose2D(this->x+other.x, this->y+other.y, this->heading+other.heading);
         }
 
         Pose2D operator- (const Pose2D& other)
         {
-            return Pose2D(this->x-other.x, this->y-other.y, this->theta-other.theta);
+            return Pose2D(this->x-other.x, this->y-other.y, this->heading-other.heading);
         }
 
         Pose2D operator* (const double& factor)
         {
-            return Pose2D(this->x*factor, this->y*factor, this->theta*factor);
+            return Pose2D(this->x*factor, this->y*factor, this->heading*factor);
         }
 
         Pose2D operator/ (const double& factor)
         {
-            return Pose2D(this->x/factor, this->y/factor, this->theta/factor);
+            return Pose2D(this->x/factor, this->y/factor, this->heading/factor);
         }
 
         bool operator== (const Pose2D& other) const
         {
             if (x - other.x < 0.001 &&
                 y - other.y < 0.001 &&
-                theta - other.theta < 0.001)
+                heading - other.heading < 0.001)
             {
                 return true;
             }
@@ -87,7 +87,7 @@ class Pose2D
         std::string toString()
         {
             std::stringstream ss;
-            ss << "X: "<< x<< " , Y: "<< y<< " , Theta: "<< theta;
+            ss << "X: "<< x<< " , Y: "<< y<< " , heading: "<< heading;
 
             return ss.str();
         }
@@ -97,7 +97,7 @@ class Pose2D
         double x;
         double y;
 
-        double theta;
+        double heading;
 };
 
 }

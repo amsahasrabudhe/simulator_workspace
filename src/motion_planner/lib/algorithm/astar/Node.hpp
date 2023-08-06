@@ -14,11 +14,11 @@ struct Node
 {
     public:     /// functions
         Node(const uint& index = 0,
-             const double& x = 0.0, const double& y = 0.0, const double& theta = 0.0,
+             const double& x = 0.0, const double& y = 0.0, const double& heading = 0.0,
              const double& steering = 0.0,
              const double& vel = 0.0,
              const double& accel = 0.0):
-            pose(Pose2D(x, y, theta)),
+            pose(Pose2D(x, y, heading)),
             steering(steering),
             vel(vel),
             accel(accel),

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from helper_classes.simulator_config import SimulatorConfig
 from traffic_generation_functions import *
@@ -6,22 +6,19 @@ from simulator_helper_functions import *
 
 from simulator_msgs.msg import Vehicle
 
+import os
+
 class Simulator:
-
-    # Variable to hold simulator configuration related information
-    sim_config = None
-
-    # Variable to hold simulation scene related data
-    env_data = None
-
-    # Variable to hold ego vehicle related information
-    ego_veh = None
-
-    # List containing traffic vehicles
-    traffic = []
 
     def __init__(self):
 
+        # Variable to hold ego vehicle related information
+        self.ego_veh = Vehicle()
+
+        # List containing traffic vehicles
+        self.traffic = []
+
+        # Variable to hold simulator configuration related information
         self.sim_config = SimulatorConfig()
         self.loadConfig(self.sim_config)
 
@@ -30,8 +27,9 @@ class Simulator:
         if self.sim_config.render:
             self.setupSimulation()
 
-            self.ego_veh_image     = loadImage(self, self.sim_config.ego_veh_image_file)
-            self.traffic_veh_image = loadImage(self, self.sim_config.traffic_veh_image_file)
+            scaled_image_dims = (int(Vehicle().length*self.sim_config.pixels_per_meter), int(Vehicle().width*self.sim_config.pixels_per_meter))
+            self.ego_veh_image     = loadImage(self, self.sim_config.ego_veh_image_file, scaled_image_dims)
+            self.traffic_veh_image = loadImage(self, self.sim_config.traffic_veh_image_file, scaled_image_dims)
 
         loadEnvironment(self)
 
@@ -59,14 +57,14 @@ class Simulator:
 
         cfg.render                     = loadParam("/simulator/render", False)
 
-        cfg.pixels_per_meter           = loadParam("/vehicle_description/pixels_per_meter", 14.2259)
+        cfg.pixels_per_meter           = loadParam("/vehicle_description/pixels_per_meter", 4.26)
 
     def setupSimulation(self):
 
         pygame.init()
         pygame.display.set_caption("2D Car Simulator")
 
-        print "PyGame window initialized!"
+        print("PyGame window initialized!")
 
         self.screen = pygame.display.set_mode((self.sim_config.window_width, self.sim_config.window_height))
 
@@ -77,7 +75,7 @@ class Simulator:
 
         self.ego_veh.pose.x = ego.vehicle.pose.x
         self.ego_veh.pose.y = ego.vehicle.pose.y
-        self.ego_veh.pose.theta = ego.vehicle.pose.theta
+        self.ego_veh.pose.heading = ego.vehicle.pose.theta
 
         self.ego_veh.steering = ego.vehicle.steering
         self.ego_veh.vel = ego.vehicle.vel
@@ -100,7 +98,7 @@ class Simulator:
 
             ros_vehicle.pose.x = vehicle.pose.x
             ros_vehicle.pose.y = vehicle.pose.y
-            ros_vehicle.pose.theta = vehicle.pose.theta
+            ros_vehicle.pose.theta = vehicle.pose.heading
 
             ros_vehicle.vel = vehicle.vel
             ros_vehicle.accel = vehicle.accel
@@ -128,13 +126,13 @@ class Simulator:
         # Display Ego vehicle using data received on rostopic
         ego_center_pos = convertOriginToVehicleCenter(self, self.ego_veh.pose.getPosition())
         ego_sim_pos = convertPosToSimCoordinates(self, ego_center_pos)
-        rotateAndBlitImage(self.screen, self.ego_veh_image, ego_sim_pos, convertToSimDegrees(self.ego_veh.pose.theta))
+        rotateAndBlitImage(self.screen, self.ego_veh_image, ego_sim_pos, convertToSimDegrees(self.ego_veh.pose.heading))
 
     def displayTrafficVehicles(self):
 
         for veh in self.traffic:
             veh_pos = convertPosToSimCoordinates(self, veh.pose.getPosition())
-            rotateAndBlitImage(self.screen, self.traffic_veh_image, veh_pos, convertToSimDegrees(veh.pose.theta))
+            rotateAndBlitImage(self.screen, self.traffic_veh_image, veh_pos, convertToSimDegrees(veh.pose.heading))
 
     def displayVehicleOrigin(self):
 

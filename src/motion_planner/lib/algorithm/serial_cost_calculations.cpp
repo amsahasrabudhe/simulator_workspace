@@ -84,7 +84,7 @@ bool nodeCollidesWithTraffic(const mp::Vec2D* child_node_polygon_points, const m
 
 void calculateVehiclePolygonPoints(const mp::Node& node, mp::Vec2D* veh_polygon_points)
 {
-    double yaw = node.pose.theta;
+    double yaw = node.pose.heading;
 
     double front      = 3.869;    // approx (vehicle.length/2 + vehicle.wheel_base/2)
     double rear       = 0.910;    // approx (vehicle.length/2 - vehicle.wheel_base/2)
@@ -204,8 +204,8 @@ std::vector<mp::Vec2D> calculateRoadPolygon(const mp::RoadInfo& road_info)
           iter != leftmost_lane.lane_points.end(); ++iter )
     {
         mp::Vec2D point;
-        point.x = leftmost_lane_half_width * cos(iter->theta + M_PI_2) + iter->x;
-        point.y = leftmost_lane_half_width * sin(iter->theta + M_PI_2) + iter->y;
+        point.x = leftmost_lane_half_width * cos(iter->heading + M_PI_2) + iter->x;
+        point.y = leftmost_lane_half_width * sin(iter->heading + M_PI_2) + iter->y;
 
         polygon_points.push_back( point );
     }
@@ -218,8 +218,8 @@ std::vector<mp::Vec2D> calculateRoadPolygon(const mp::RoadInfo& road_info)
           iter != rightmost_lane.lane_points.rend(); ++iter )
     {
         mp::Vec2D point;
-        point.x = rightmost_lane_half_width * cos(iter->theta - M_PI_2) + iter->x;
-        point.y = rightmost_lane_half_width * sin(iter->theta - M_PI_2) + iter->y;
+        point.x = rightmost_lane_half_width * cos(iter->heading - M_PI_2) + iter->x;
+        point.y = rightmost_lane_half_width * sin(iter->heading - M_PI_2) + iter->y;
 
         polygon_points.push_back( point );
     }
@@ -233,7 +233,7 @@ std::vector<mp::Vec2D> calculateTrafficPolygons(const std::vector<mp::Vehicle>& 
 
     for (const auto& vehicle : traffic)
     {
-        double yaw = vehicle.pose.theta;
+        double yaw = vehicle.pose.heading;
 
         double front      = 2.389;    // vehicle.length/2 (since simulator publishes midpoint as pose)
         double rear       = 2.389;    // vehicle.length/2

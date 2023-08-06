@@ -1,14 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 class Pose:
 
     # Initializing variables with default value
-    def __init__(self, pos_x=0, pos_y=0, theta=0):
+    def __init__(self, pos_x=0, pos_y=0, heading=0):
 
         self.x = pos_x
         self.y = pos_y
 
-        self.theta = theta
+        self.heading = heading
 
     def __eq__(self, other):
 
@@ -18,19 +18,19 @@ class Pose:
 
     def __add__(self, other):
 
-        return Pose(self.x+other.x, self.y+other.y, self.theta+other.theta)
+        return Pose(self.x+other.x, self.y+other.y, self.heading+other.heading)
 
     def __sub__(self, other):
 
-        return Pose(self.x-other.x, self.y-other.y, self.theta-other.theta)
+        return Pose(self.x-other.x, self.y-other.y, self.heading-other.heading)
 
     def multiply(self, factor):
 
-        return Pose(self.x*factor, self.y*factor, self.theta*factor)
+        return Pose(self.x*factor, self.y*factor, self.heading*factor)
 
     def divide(self, factor):
 
-        return Pose(self.x/factor, self.y/factor, self.theta/factor)
+        return Pose(self.x/factor, self.y/factor, self.heading/factor)
 
     def getPosition(self):
 

@@ -4,13 +4,14 @@ traffic_states_topic      : "/traffic_veh_states"
 window_width              : 1280
 window_height             : 720
 
-#env_yaml_file   : "resources/environments/two_lane_y_inverted_meters_static_traffic.yaml"
-env_yaml_file   : "resources/environments/two_lane_two_cars_y_inverted_meters.yaml"
+# env_yaml_file    : "../resources/environments/curved_no_traffic.yaml"
+# env_bg_image_file : "../resources/environments/curved.png"
 
-env_bg_image_file         : "resources/environments/two_lane_y_inverted_meters.png"
+env_yaml_file             : "../resources/environments/three_lane_lost_cargo_with_adj_traffic.yaml"
+env_bg_image_file         : "../resources/environments/three_lane_300m_long.png"
 
-ego_veh_image_file        : "resources/ego_veh_small.png"
-traffic_veh_image_file    : "resources/traffic_veh_small.png"
+ego_veh_image_file        : "../resources/ego_veh_small.png"
+traffic_veh_image_file    : "../resources/traffic_veh_small.png"
 
 render                    : true
 

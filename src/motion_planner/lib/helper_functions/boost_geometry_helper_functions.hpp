@@ -26,8 +26,8 @@ BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
     for ( std::vector<Pose2D>::const_iterator iter = leftmost_lane.lane_points.begin();
           iter != leftmost_lane.lane_points.end(); ++iter )
     {
-        double x = leftmost_lane_half_width * cos(iter->theta + M_PI_2) + iter->x;
-        double y = leftmost_lane_half_width * sin(iter->theta + M_PI_2) + iter->y;
+        double x = leftmost_lane_half_width * cos(iter->heading + M_PI_2) + iter->x;
+        double y = leftmost_lane_half_width * sin(iter->heading + M_PI_2) + iter->y;
 
         road_polygon_points.push_back( BoostPoint(x, y) );
     }
@@ -39,8 +39,8 @@ BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
     for ( std::vector<Pose2D>::const_reverse_iterator iter = rightmost_lane.lane_points.rbegin();
           iter != rightmost_lane.lane_points.rend(); ++iter )
     {
-        double x = rightmost_lane_half_width * cos(iter->theta - M_PI_2) + iter->x;
-        double y = rightmost_lane_half_width * sin(iter->theta - M_PI_2) + iter->y;
+        double x = rightmost_lane_half_width * cos(iter->heading - M_PI_2) + iter->x;
+        double y = rightmost_lane_half_width * sin(iter->heading - M_PI_2) + iter->y;
 
         road_polygon_points.push_back( BoostPoint(x, y) );
     }
@@ -66,7 +66,7 @@ BoostPointList getVehiclePolygonPoints( const Vehicle& vehicle )
     BoostPointList veh_polygon_points;
 
     Pose2D vehicle_pose = vehicle.pose;
-    double yaw = vehicle_pose.theta;
+    double yaw = vehicle_pose.heading;
 
     double front = 3.869;    // approx (vehicle.length/2 + vehicle.wheel_base/2)
     double rear  = 0.910;    // approx (vehicle.length/2 - vehicle.wheel_base/2)

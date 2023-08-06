@@ -21,7 +21,7 @@ std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
 
             double dt = config.child_node_dt;    ///< seconds
 
-            double curr_theta = parent.pose.theta;
+            double curr_theta = parent.pose.heading;
             double curr_vel = parent.vel;
 
             /// Add steering change to update steering angle for each child node
@@ -38,13 +38,13 @@ std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
             {
                 child.pose.x = parent.pose.x + (std::sin(curr_theta+beta) - std::sin(curr_theta))*R;
                 child.pose.y = parent.pose.y + (std::cos(curr_theta) - std::cos(curr_theta+beta))*R;
-                child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
+                child.pose.heading = fmod ((curr_theta+beta), 2*M_PI);
             }
             else
             {
                 child.pose.x = parent.pose.x + dt * curr_vel * std::cos(curr_theta);
                 child.pose.y = parent.pose.y + dt * curr_vel * std::sin(curr_theta);
-                child.pose.theta = fmod ((curr_theta+beta), 2*M_PI);
+                child.pose.heading = fmod ((curr_theta+beta), 2*M_PI);
             }
 
             child.vel = parent.vel + dt * parent.accel;

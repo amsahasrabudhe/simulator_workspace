@@ -14,7 +14,7 @@ class Vehicle
     public:     /// functions
         Vehicle(const double& init_x=0.0, const double& init_y=0.0, const double& init_heading=0.0 , const double& init_vel=0.0 , const double& init_accel=0.0):
             id(0),
-            length(4.78),
+            length(4.97),
             width(2.1),
             pose(init_x, init_y, init_heading),
             steering(0.0),
@@ -24,11 +24,11 @@ class Vehicle
 
         }
 
-        void setPose(const double& x=0.0, const double& y=0.0, const double& theta=0.0)
+        void setPose(const double& x=0.0, const double& y=0.0, const double& heading=0.0)
         {
             this->pose.x = x;
             this->pose.y = y;
-            this->pose.theta = theta;
+            this->pose.heading = heading;
         }
 
         void setVel(const double& vel=0.0)

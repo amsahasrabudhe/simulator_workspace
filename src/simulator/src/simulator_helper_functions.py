@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import rospy
@@ -12,12 +12,11 @@ from helper_classes.pose import Pose
 
 from simulator_msgs.msg import EgoVehicle, TrafficVehicles
 
-
 def loadEnvironment(sim_obj):
 
     # Load road related information from the yaml file
     with open(sim_obj.sim_config.env_yaml_file, "r") as env_file:
-        sim_obj.env_data = yaml.load(env_file)
+        sim_obj.env_data = yaml.safe_load(env_file)
 
     sim_obj.ego_veh = setupEgoVehicle(sim_obj)
 
@@ -28,42 +27,38 @@ def loadEnvironment(sim_obj):
 
     sim_obj.road_info = loadRoadInfo(sim_obj)
 
-
 def loadRoadInfo(sim_obj):
 
     temp_env_data = sim_obj.env_data
 
     road_info = RoadInfo()
-    road_info.num_lanes = temp_env_data['num_lanes']
+    road_info.num_lanes = len(temp_env_data['lanes'])
 
     for lane_number in range(road_info.num_lanes):
 
-        lane_info = temp_env_data['lane_info'][lane_number]
+        lanes = temp_env_data['lanes'][lane_number]
 
         lane_point_list = []
-        for lane_point in lane_info['lane_points']:
+        for lane_point in lanes['lane_points']:
 
-            lane_point_pose = Pose(lane_point['x'], lane_point['y'], lane_point['theta'])
+            lane_point_pose = Pose(lane_point['x'], lane_point['y'], lane_point['heading'])
             lane_point_list.append(lane_point_pose)
 
-        road_info.lanes[lane_info['lane_id']] = lane_point_list
+        road_info.lanes[lanes['lane_id']] = lane_point_list
 
     return road_info
 
-
 def setupEgoVehicle(sim_obj):
-
     ego_veh_id      = 0
     ego_veh_pos     = (sim_obj.env_data['ego_veh_pose']['x'], sim_obj.env_data['ego_veh_pose']['y'])
-    ego_veh_heading = sim_obj.env_data['ego_veh_pose']['theta']
+    ego_veh_heading = sim_obj.env_data['ego_veh_pose']['heading']
 
-    ego_veh = Vehicle(veh_id=ego_veh_id, veh_init_pos=ego_veh_pos, veh_init_theta=ego_veh_heading)
+    ego_veh = Vehicle(veh_id=ego_veh_id, veh_init_pos=ego_veh_pos, veh_init_heading=ego_veh_heading)
     ego_veh.max_vel = loadParam("/vehicle_description/max_velocity_mps", 17.8816)
     ego_veh.max_accel = loadParam("/vehicle_description/max_acceleration_mps2", 4.0)
     ego_veh.max_steering_angle = loadParam("/vehicle_description/max_steering_angle_degree", 40.0)
 
     return ego_veh
-
 
 def setupTrafficVehicles(sim_obj):
 
@@ -71,9 +66,9 @@ def setupTrafficVehicles(sim_obj):
 
         veh_id = vehicle['vehicle_id']
         veh_pos = (vehicle['vehicle_pose']['x'], vehicle['vehicle_pose']['y'])
-        veh_heading = vehicle['vehicle_pose']['theta']
+        veh_heading = vehicle['vehicle_pose']['heading']
 
-        traffic_vehicle = Vehicle(veh_id=veh_id, veh_init_pos=veh_pos, veh_init_theta=veh_heading)
+        traffic_vehicle = Vehicle(veh_id=veh_id, veh_init_pos=veh_pos, veh_init_heading=veh_heading)
 
         traffic_vehicle.vel = vehicle['initial_velocity']
 
@@ -83,39 +78,35 @@ def setupTrafficVehicles(sim_obj):
 
         sim_obj.traffic.append(traffic_vehicle)
 
-
 def setupPublishersSubscribers(sim_obj):
-
-    sim_obj.traffic_states_pub = rospy.Publisher(sim_obj.sim_config.traffic_states_topic, TrafficVehicles)
+    sim_obj.traffic_states_pub = rospy.Publisher(sim_obj.sim_config.traffic_states_topic, TrafficVehicles, queue_size=1)
     sim_obj.ego_veh_state_sub = rospy.Subscriber(sim_obj.sim_config.ego_veh_state_topic, EgoVehicle, sim_obj.egoVehStateReceived)
 
-
-def loadImage(sim_obj, filename):
+def loadImage(sim_obj, filename, new_dims=None):
 
     image_path = os.path.join(sim_obj.current_dir, filename)
-    return pygame.image.load(image_path).convert_alpha()
+    image = pygame.image.load(image_path).convert_alpha()
+    
+    if new_dims is not None:
+        image = pygame.transform.scale(image, new_dims)
 
+    return image
 
 def loadParam(param_name, default):
     return rospy.get_param(param_name, default)
 
-
 def checkPyGameQuit():
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
 
-
 def rotateAndBlitImage(surface, image, center_pos, heading_angle):
-
     rotated_image = pygame.transform.rotozoom(image, -heading_angle, 1)
     rotated_image_rect = rotated_image.get_rect()
 
     rotated_image_rect.center = center_pos[0], center_pos[1]
 
     surface.blit(rotated_image, rotated_image_rect)
-
 
 # @brief Converts position to simulator coordinate system
 def convertPosToSimCoordinates(sim_obj, world_position):
@@ -131,13 +122,11 @@ def convertPosToSimCoordinates(sim_obj, world_position):
 
 # @brief Returns center pos using vehicle origin coordinates as input
 def convertOriginToVehicleCenter(sim_obj, origin_position):
-
-    center_position_x = origin_position[0] + (sim_obj.ego_veh.wheel_base/2)*math.cos(sim_obj.ego_veh.pose.theta)
-    center_position_y = origin_position[1] + (sim_obj.ego_veh.wheel_base/2)*math.sin(sim_obj.ego_veh.pose.theta)
+    center_position_x = origin_position[0] + (sim_obj.ego_veh.wheel_base/2)*math.cos(sim_obj.ego_veh.pose.heading)
+    center_position_y = origin_position[1] + (sim_obj.ego_veh.wheel_base/2)*math.sin(sim_obj.ego_veh.pose.heading)
 
     return center_position_x, center_position_y
 
 # @brief convert angle to simulator coordinates degrees
-def convertToSimDegrees(theta):
-
-    return math.degrees(-theta)
+def convertToSimDegrees(heading):
+    return math.degrees(-heading)

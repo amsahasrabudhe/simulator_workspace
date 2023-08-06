@@ -108,7 +108,7 @@ void PlannerVisualizer::addLanesVis()
             lane_point_marker.pose.position.z = 0;
 
             tf2::Quaternion q;
-            q.setRPY(0, 0, lane.lane_points[j].theta);
+            q.setRPY(0, 0, lane.lane_points[j].heading);
 
             lane_point_marker.pose.orientation.x = q.x();
             lane_point_marker.pose.orientation.y = q.y();
@@ -146,12 +146,12 @@ void PlannerVisualizer::addEgoVehicleVis()
     vehicle.action = visualization_msgs::Marker::ADD;
     vehicle.ns     = "ego_vehicle";
 
-    vehicle.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.theta) * m_cfg.wheel_base/2;
-    vehicle.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.theta) * m_cfg.wheel_base/2;
+    vehicle.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.heading) * m_cfg.wheel_base/2;
+    vehicle.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.heading) * m_cfg.wheel_base/2;
     vehicle.pose.position.z = m_cfg.height / 2;
 
     tf2::Quaternion q;
-    q.setRPY(0, 0, m_overall_info->ego_state->pose.theta);
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading);
 
     vehicle.pose.orientation.x = q.x();
     vehicle.pose.orientation.y = q.y();
@@ -188,12 +188,12 @@ void PlannerVisualizer::addTrafficVis()
         traffic_car.action = visualization_msgs::Marker::ADD;
         traffic_car.ns     = "traffic";
 
-        traffic_car.pose.position.x = m_overall_info->traffic[i].pose.x + cos(m_overall_info->traffic[i].pose.theta) * m_cfg.wheel_base/2;
-        traffic_car.pose.position.y = m_overall_info->traffic[i].pose.y + sin(m_overall_info->traffic[i].pose.theta) * m_cfg.wheel_base/2;
+        traffic_car.pose.position.x = m_overall_info->traffic[i].pose.x + cos(m_overall_info->traffic[i].pose.heading) * m_cfg.wheel_base/2;
+        traffic_car.pose.position.y = m_overall_info->traffic[i].pose.y + sin(m_overall_info->traffic[i].pose.heading) * m_cfg.wheel_base/2;
         traffic_car.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->traffic[i].pose.theta);
+        q.setRPY(0, 0, m_overall_info->traffic[i].pose.heading);
 
         traffic_car.pose.orientation.x = q.x();
         traffic_car.pose.orientation.y = q.y();
@@ -313,12 +313,12 @@ void PlannerVisualizer::addCurrChildNodesVis()
         child_node.action = visualization_msgs::Marker::ADD;
         child_node.ns     = "curr_child_nodes";
 
-        child_node.pose.position.x = m_overall_info->mp_info.curr_eval_nodes[i].pose.x + cos(m_overall_info->mp_info.curr_eval_nodes[i].pose.theta) * m_cfg.wheel_base/2;
-        child_node.pose.position.y = m_overall_info->mp_info.curr_eval_nodes[i].pose.y + sin(m_overall_info->mp_info.curr_eval_nodes[i].pose.theta) * m_cfg.wheel_base/2;
+        child_node.pose.position.x = m_overall_info->mp_info.curr_eval_nodes[i].pose.x + cos(m_overall_info->mp_info.curr_eval_nodes[i].pose.heading) * m_cfg.wheel_base/2;
+        child_node.pose.position.y = m_overall_info->mp_info.curr_eval_nodes[i].pose.y + sin(m_overall_info->mp_info.curr_eval_nodes[i].pose.heading) * m_cfg.wheel_base/2;
         child_node.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->mp_info.curr_eval_nodes[i].pose.theta);
+        q.setRPY(0, 0, m_overall_info->mp_info.curr_eval_nodes[i].pose.heading);
 
         child_node.pose.orientation.x = q.x();
         child_node.pose.orientation.y = q.y();
@@ -356,12 +356,12 @@ void PlannerVisualizer::addPlannedPathVis()
         node.action = visualization_msgs::Marker::ADD;
         node.ns     = "planned";
 
-        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
-        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
+        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.heading) * m_cfg.wheel_base/2;
+        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.heading) * m_cfg.wheel_base/2;
         node.pose.position.z = m_cfg.height/2 - 0.1;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.theta);
+        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.heading);
 
         node.pose.orientation.x = q.x();
         node.pose.orientation.y = q.y();
@@ -397,12 +397,12 @@ void PlannerVisualizer::addPlannedPathSplineVis()
     curr_state.header.stamp = ros::Time::now();
     curr_state.header.frame_id = "world_origin";
 
-    curr_state.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.theta) * m_cfg.wheel_base/2;
-    curr_state.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.theta) * m_cfg.wheel_base/2;
+    curr_state.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.heading) * m_cfg.wheel_base/2;
+    curr_state.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.heading) * m_cfg.wheel_base/2;
     curr_state.pose.position.z = m_cfg.height / 2;
 
     tf2::Quaternion q;
-    q.setRPY(0, 0, m_overall_info->ego_state->pose.theta);
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading);
 
     curr_state.pose.orientation.x = q.x();
     curr_state.pose.orientation.y = q.y();
@@ -419,12 +419,12 @@ void PlannerVisualizer::addPlannedPathSplineVis()
         node.header.stamp = ros::Time::now() + ros::Duration( (i+1)*m_cfg.child_node_dt );
         node.header.frame_id = "world_origin";
 
-        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
-        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.theta) * m_cfg.wheel_base/2;
+        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.heading) * m_cfg.wheel_base/2;
+        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.heading) * m_cfg.wheel_base/2;
         node.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.theta);
+        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.heading);
 
         node.pose.orientation.x = q.x();
         node.pose.orientation.y = q.y();

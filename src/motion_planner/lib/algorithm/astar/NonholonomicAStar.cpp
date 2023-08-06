@@ -53,7 +53,7 @@ void NonholonomicAStar::planPath(const ros::TimerEvent& /*event*/)
 
         // Create node for the current state of ego vehicle
         mp::EgoVehicle ego = *(m_overall_info->ego_state);
-        Node curr_node(node_num, ego.pose.x, ego.pose.y, ego.pose.theta, ego.steering, ego.vel, ego.accel);
+        Node curr_node(node_num, ego.pose.x, ego.pose.y, ego.pose.heading, ego.steering, ego.vel, ego.accel);
 
         Node start = curr_node;
 
@@ -262,7 +262,7 @@ std::vector<Pose2D> NonholonomicAStar::getLanePointsForPolyFit()
         Pose2D point;
         point.x     = curr_lane.lane_points[first_pt + count].x;
         point.y     = curr_lane.lane_points[first_pt + count].y;
-        point.theta = curr_lane.lane_points[first_pt + count].theta;
+        point.heading = curr_lane.lane_points[first_pt + count].heading;
 
         points.push_back(point);
         count++;
@@ -279,7 +279,7 @@ Eigen::Spline3d NonholonomicAStar::getSpline( const std::vector<Pose2D>& points 
     {
         spline_points(0, i) = points[i].x;
         spline_points(1, i) = points[i].y;
-        spline_points(2, i) = points[i].theta;
+        spline_points(2, i) = points[i].heading;
     }
 
     return Eigen::SplineFitting<Eigen::Spline3d>::Interpolate(spline_points, 3);

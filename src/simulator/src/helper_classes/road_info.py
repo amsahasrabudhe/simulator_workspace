@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-from pose import Pose
+from helper_classes.pose import Pose
 import math
 
 class RoadInfo:
@@ -8,9 +8,8 @@ class RoadInfo:
     # Initializing variables with default value
     def __init__(self):
 
-        self.num_lanes         = 1
-
-        self.lanes             = {}     # Dictionary of "lane id" : "list of lane points"
+        self.num_lanes = 1
+        self.lanes = {}     # Dictionary of "lane id" : "list of lane points"
 
 
     def getNextNearestLanePoint(self, car_pose, lane_id):
