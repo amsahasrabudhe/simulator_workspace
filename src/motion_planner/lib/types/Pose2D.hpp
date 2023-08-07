@@ -25,37 +25,37 @@ using BoostPolygon = boost::geometry::model::polygon<BoostPoint>;
 class Pose2D
 {
     public:     /// functions
-        Pose2D(const double& _x=0.0, const double& _y=0.0, const double& _theta=0.0):
-            x(_x),
-            y(_y),
-            heading(_theta)
+        Pose2D(const double& _x_m=0.0, const double& _y_m=0.0, const double& _heading_rad=0.0):
+            x_m(_x_m),
+            y_m(_y_m),
+            heading_rad(_heading_rad)
         {}
 
         Pose2D operator+ (const Pose2D& other)
         {
-            return Pose2D(this->x+other.x, this->y+other.y, this->heading+other.heading);
+            return Pose2D(this->x_m+other.x_m, this->y_m+other.y_m, this->heading_rad+other.heading_rad);
         }
 
         Pose2D operator- (const Pose2D& other)
         {
-            return Pose2D(this->x-other.x, this->y-other.y, this->heading-other.heading);
+            return Pose2D(this->x_m-other.x_m, this->y_m-other.y_m, this->heading_rad-other.heading_rad);
         }
 
         Pose2D operator* (const double& factor)
         {
-            return Pose2D(this->x*factor, this->y*factor, this->heading*factor);
+            return Pose2D(this->x_m*factor, this->y_m*factor, this->heading_rad*factor);
         }
 
         Pose2D operator/ (const double& factor)
         {
-            return Pose2D(this->x/factor, this->y/factor, this->heading/factor);
+            return Pose2D(this->x_m/factor, this->y_m/factor, this->heading_rad/factor);
         }
 
         bool operator== (const Pose2D& other) const
         {
-            if (x - other.x < 0.001 &&
-                y - other.y < 0.001 &&
-                heading - other.heading < 0.001)
+            if (((x_m - other.x_m) < 0.5) &&
+                ((y_m - other.y_m) < 0.5) &&
+                ((heading_rad - other.heading_rad) < 0.001))
             {
                 return true;
             }
@@ -65,33 +65,36 @@ class Pose2D
 
         double distFrom(const Pose2D other)
         {
-            return pow((pow((x - other.x), 2) + pow((y - other.y), 2)), 0.5);
+            const double dx_squared = (x_m - other.x_m) * (x_m - other.x_m);
+            const double dy_squared = (y_m - other.y_m) * (y_m - other.y_m);
+
+            return std::sqrt(dx_squared + dy_squared);
         }
 
         BoostPoint getBoostPoint()
         {
-            return BoostPoint(x, y);
+            return BoostPoint(x_m, y_m);
         }
 
         Vec2D getVec2d()
         {
-            return Vec2D{x, y};
+            return Vec2D{x_m, y_m};
         }
 
         std::string toString()
         {
             std::stringstream ss;
-            ss << "X: "<< x<< " , Y: "<< y<< " , Heading: "<< heading;
+            ss << "X(m): "<< x_m<< " , Y(m): "<< y_m<< " , Heading(rad): "<< heading_rad;
 
             return ss.str();
         }
 
     public:     /// variables
 
-        double x;
-        double y;
+        double x_m;
+        double y_m;
 
-        double heading;
+        double heading_rad;
 };
 
 }

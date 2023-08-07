@@ -9,52 +9,45 @@
 namespace mp
 {
 
-std::vector<Node> getChildNodes(Node parent, const PlannerConfig& config)
+inline std::vector<Node> getChildNodes(const Node& parent, const PlannerConfig& config)
 {
     std::vector<Node> children;
 
-    for (double steering_change = -15; steering_change <= 15; steering_change += 2.5)
+    const double max_accel_change_mpss = config.max_jerk_mpsss * config.child_node_dt;
+
+    for (double steering_change_deg = -10.0; steering_change_deg <= 10.0; steering_change_deg += 2.5)
     {
-        for (double accel = -0.1; accel <= 0.1; accel += 0.05)
+        for (double accel_mpss = -max_accel_change_mpss; accel_mpss <= max_accel_change_mpss; accel_mpss += 0.1)
         {
             mp::Node child;
 
-            double dt = config.child_node_dt;    ///< seconds
+            const double dt = config.child_node_dt;    ///< seconds
 
-            double curr_theta = parent.pose.heading;
-            double curr_vel = parent.vel;
+            const double curr_heading_rad = parent.pose.heading_rad;
+            const double curr_vel_mps = parent.vel_mps;
 
             /// Add steering change to update steering angle for each child node
-            double curr_steering = parent.steering + steering_change*toRadians;
-            child.steering = curr_steering;
+            const double new_steering_rad = parent.steering_rad + steering_change_deg*toRadians;
+            
+            // Clamp to max steering angle
+            child.steering_rad = std::min(new_steering_rad, config.max_steering_rad);
 
-            if (child.steering > config.max_steering_rad)
-                child.steering = config.max_steering_rad;
+            // Calculate the heading angle change and radius of curvature
 
-            double beta = dt * curr_vel * std::tan(curr_steering) / config.wheel_base;
-            double R = dt * curr_vel / beta;
+            child.pose.x_m = parent.pose.x_m + dt * curr_vel_mps * std::cos(curr_heading_rad);
+            child.pose.y_m = parent.pose.y_m + dt * curr_vel_mps * std::sin(curr_heading_rad);
+            
+            const double heading_change_rad = dt * curr_vel_mps * std::tan(new_steering_rad) / config.wheel_base;
+            child.pose.heading_rad = std::fmod((curr_heading_rad + heading_change_rad), 2*M_PI);
 
-            if (std::fabs(beta) > 0.001)
-            {
-                child.pose.x = parent.pose.x + (std::sin(curr_theta+beta) - std::sin(curr_theta))*R;
-                child.pose.y = parent.pose.y + (std::cos(curr_theta) - std::cos(curr_theta+beta))*R;
-                child.pose.heading = fmod ((curr_theta+beta), 2*M_PI);
-            }
-            else
-            {
-                child.pose.x = parent.pose.x + dt * curr_vel * std::cos(curr_theta);
-                child.pose.y = parent.pose.y + dt * curr_vel * std::sin(curr_theta);
-                child.pose.heading = fmod ((curr_theta+beta), 2*M_PI);
-            }
+            child.vel_mps = parent.vel_mps + dt * parent.accel_mpss;
+            child.accel_mpss = accel_mpss;
 
-            child.vel = parent.vel + dt * parent.accel;
-            child.accel = accel;
-
-//            const double gx = child.distFrom(parent);
+            // const double gx = child.distFrom(parent);
 
             child.setParentIndex(parent.node_index);
 
-            children.push_back( child );
+            children.push_back(child);
         }
     }
 

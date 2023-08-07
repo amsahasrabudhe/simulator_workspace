@@ -22,7 +22,6 @@ void PlannerVisualizer::initialize()
     m_vis_msg = boost::make_shared<visualization_msgs::MarkerArray>();
 
     m_visualization_pub = m_nh.advertise<visualization_msgs::MarkerArray>(m_cfg.visualization_topic, 1, false);
-
     m_path_pub = m_nh.advertise<nav_msgs::Path>(m_cfg.planned_path_topic, 1, false);
 }
 
@@ -70,15 +69,15 @@ void PlannerVisualizer::addLanesVis()
         for (const auto& lane_pt : lane.lane_points)
         {
             geometry_msgs::Point pt;
-            pt.x = lane_pt.x;
-            pt.y = lane_pt.y;
+            pt.x = lane_pt.x_m;
+            pt.y = lane_pt.y_m;
             pt.z = 0.0;
 
             lane_point_marker.points.push_back(std::move(pt));
         }
 
-        lane_point_marker.scale.x = 1.0;
-        lane_point_marker.scale.y = lane.lane_width;  // Subtracting width to show gap between lanes
+        lane_point_marker.scale.x = lane.lane_width - 0.2;
+        lane_point_marker.scale.y = lane.lane_width - 0.2;  // Subtracting width to show gap between lanes
         lane_point_marker.scale.z = 0.3;
 
         lane_point_marker.color.r = 0.2f;
@@ -107,12 +106,12 @@ void PlannerVisualizer::addEgoVehicleVis()
     vehicle.action = visualization_msgs::Marker::ADD;
     vehicle.ns     = "ego_vehicle";
 
-    vehicle.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.heading) * m_cfg.wheel_base/2;
-    vehicle.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.heading) * m_cfg.wheel_base/2;
+    vehicle.pose.position.x = m_overall_info->ego_state->pose.x_m + cos(m_overall_info->ego_state->pose.heading_rad) * m_cfg.wheel_base/2;
+    vehicle.pose.position.y = m_overall_info->ego_state->pose.y_m + sin(m_overall_info->ego_state->pose.heading_rad) * m_cfg.wheel_base/2;
     vehicle.pose.position.z = m_cfg.height / 2;
 
     tf2::Quaternion q;
-    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading);
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading_rad);
 
     vehicle.pose.orientation.x = q.x();
     vehicle.pose.orientation.y = q.y();
@@ -149,12 +148,12 @@ void PlannerVisualizer::addTrafficVis()
         traffic_car.action = visualization_msgs::Marker::ADD;
         traffic_car.ns     = "traffic";
 
-        traffic_car.pose.position.x = m_overall_info->traffic[i].pose.x + cos(m_overall_info->traffic[i].pose.heading) * m_cfg.wheel_base/2;
-        traffic_car.pose.position.y = m_overall_info->traffic[i].pose.y + sin(m_overall_info->traffic[i].pose.heading) * m_cfg.wheel_base/2;
+        traffic_car.pose.position.x = m_overall_info->traffic[i].pose.x_m + cos(m_overall_info->traffic[i].pose.heading_rad) * m_cfg.wheel_base/2;
+        traffic_car.pose.position.y = m_overall_info->traffic[i].pose.y_m + sin(m_overall_info->traffic[i].pose.heading_rad) * m_cfg.wheel_base/2;
         traffic_car.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->traffic[i].pose.heading);
+        q.setRPY(0, 0, m_overall_info->traffic[i].pose.heading_rad);
 
         traffic_car.pose.orientation.x = q.x();
         traffic_car.pose.orientation.y = q.y();
@@ -220,19 +219,24 @@ void PlannerVisualizer::addRoadPolygonVis()
 
 void PlannerVisualizer::addEgoPolygonVis()
 {
-    visualization_msgs::Marker boundary;
+    visualization_msgs::Marker ego_poly_marker;
 
-    boundary.header.stamp = ros::Time::now();
-    boundary.header.frame_id = "world_origin";
+    ego_poly_marker.header.stamp = ros::Time::now();
+    ego_poly_marker.header.frame_id = "world_origin";
 
-    boundary.id     = 1111;
-    boundary.type   = visualization_msgs::Marker::LINE_STRIP;
-    boundary.action = visualization_msgs::Marker::ADD;
-    boundary.ns     = "ego_polygon";
+    ego_poly_marker.id     = 1112;
+    ego_poly_marker.type   = visualization_msgs::Marker::LINE_STRIP;
+    ego_poly_marker.action = visualization_msgs::Marker::ADD;
+    ego_poly_marker.ns     = "ego_polygon";
 
-    boundary.pose.position.z = 0.25;
+    ego_poly_marker.pose.position.z = 0.25;
 
-    boundary.scale.x = 0.3;
+    ego_poly_marker.scale.x = 0.3;
+
+    ego_poly_marker.color.r = 1.0;
+    ego_poly_marker.color.g = 1.0;
+    ego_poly_marker.color.b = 1.0;
+    ego_poly_marker.color.a = 1.0;
 
     BoostPointList boundary_points = m_overall_info->ego_state->polygon_points;
     for (std::size_t i = 0; i < boundary_points.size(); ++i)
@@ -242,21 +246,13 @@ void PlannerVisualizer::addEgoPolygonVis()
         point.y = boundary_points[i].y();
         point.z = 0;
 
-        boundary.points.push_back(point);
-
-        std_msgs::ColorRGBA color;
-        color.r = 1.0;
-        color.g = 1.0;
-        color.b = 1.0;
-        color.a = 1.0;
-
-        boundary.colors.push_back(color);
+        ego_poly_marker.points.push_back(point);
     }
 
-    boundary.lifetime = ros::Duration(0.1);
-    boundary.frame_locked = true;
+    ego_poly_marker.lifetime = ros::Duration(0.2);
+    ego_poly_marker.frame_locked = true;
 
-    m_vis_msg->markers.push_back(boundary);
+    m_vis_msg->markers.push_back(ego_poly_marker);
 }
 
 void PlannerVisualizer::addCurrChildNodesVis()
@@ -274,12 +270,12 @@ void PlannerVisualizer::addCurrChildNodesVis()
         child_node.action = visualization_msgs::Marker::ADD;
         child_node.ns     = "curr_child_nodes";
 
-        child_node.pose.position.x = m_overall_info->mp_info.curr_eval_nodes[i].pose.x + cos(m_overall_info->mp_info.curr_eval_nodes[i].pose.heading) * m_cfg.wheel_base/2;
-        child_node.pose.position.y = m_overall_info->mp_info.curr_eval_nodes[i].pose.y + sin(m_overall_info->mp_info.curr_eval_nodes[i].pose.heading) * m_cfg.wheel_base/2;
+        child_node.pose.position.x = m_overall_info->mp_info.curr_eval_nodes[i].pose.x_m + cos(m_overall_info->mp_info.curr_eval_nodes[i].pose.heading_rad) * m_cfg.wheel_base/2;
+        child_node.pose.position.y = m_overall_info->mp_info.curr_eval_nodes[i].pose.y_m + sin(m_overall_info->mp_info.curr_eval_nodes[i].pose.heading_rad) * m_cfg.wheel_base/2;
         child_node.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->mp_info.curr_eval_nodes[i].pose.heading);
+        q.setRPY(0, 0, m_overall_info->mp_info.curr_eval_nodes[i].pose.heading_rad);
 
         child_node.pose.orientation.x = q.x();
         child_node.pose.orientation.y = q.y();
@@ -317,12 +313,12 @@ void PlannerVisualizer::addPlannedPathVis()
         node.action = visualization_msgs::Marker::ADD;
         node.ns     = "planned";
 
-        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.heading) * m_cfg.wheel_base/2;
-        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.heading) * m_cfg.wheel_base/2;
+        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x_m + cos(m_overall_info->mp_info.planned_path[i].pose.heading_rad) * m_cfg.wheel_base/2;
+        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y_m + sin(m_overall_info->mp_info.planned_path[i].pose.heading_rad) * m_cfg.wheel_base/2;
         node.pose.position.z = m_cfg.height/2 - 0.1;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.heading);
+        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.heading_rad);
 
         node.pose.orientation.x = q.x();
         node.pose.orientation.y = q.y();
@@ -358,12 +354,12 @@ void PlannerVisualizer::addPlannedPathSplineVis()
     curr_state.header.stamp = ros::Time::now();
     curr_state.header.frame_id = "world_origin";
 
-    curr_state.pose.position.x = m_overall_info->ego_state->pose.x + cos(m_overall_info->ego_state->pose.heading) * m_cfg.wheel_base/2;
-    curr_state.pose.position.y = m_overall_info->ego_state->pose.y + sin(m_overall_info->ego_state->pose.heading) * m_cfg.wheel_base/2;
+    curr_state.pose.position.x = m_overall_info->ego_state->pose.x_m + cos(m_overall_info->ego_state->pose.heading_rad) * m_cfg.wheel_base/2;
+    curr_state.pose.position.y = m_overall_info->ego_state->pose.y_m + sin(m_overall_info->ego_state->pose.heading_rad) * m_cfg.wheel_base/2;
     curr_state.pose.position.z = m_cfg.height / 2;
 
     tf2::Quaternion q;
-    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading);
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading_rad);
 
     curr_state.pose.orientation.x = q.x();
     curr_state.pose.orientation.y = q.y();
@@ -380,12 +376,12 @@ void PlannerVisualizer::addPlannedPathSplineVis()
         node.header.stamp = ros::Time::now() + ros::Duration( (i+1)*m_cfg.child_node_dt );
         node.header.frame_id = "world_origin";
 
-        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x + cos(m_overall_info->mp_info.planned_path[i].pose.heading) * m_cfg.wheel_base/2;
-        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y + sin(m_overall_info->mp_info.planned_path[i].pose.heading) * m_cfg.wheel_base/2;
+        node.pose.position.x = m_overall_info->mp_info.planned_path[i].pose.x_m + cos(m_overall_info->mp_info.planned_path[i].pose.heading_rad) * m_cfg.wheel_base/2;
+        node.pose.position.y = m_overall_info->mp_info.planned_path[i].pose.y_m + sin(m_overall_info->mp_info.planned_path[i].pose.heading_rad) * m_cfg.wheel_base/2;
         node.pose.position.z = m_cfg.height / 2;
 
         tf2::Quaternion q;
-        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.heading);
+        q.setRPY(0, 0, m_overall_info->mp_info.planned_path[i].pose.heading_rad);
 
         node.pose.orientation.x = q.x();
         node.pose.orientation.y = q.y();

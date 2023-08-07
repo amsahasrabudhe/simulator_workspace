@@ -26,8 +26,8 @@ inline BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
     for ( std::vector<Pose2D>::const_iterator iter = leftmost_lane.lane_points.begin();
           iter != leftmost_lane.lane_points.end(); ++iter )
     {
-        double x = leftmost_lane_half_width * cos(iter->heading + M_PI_2) + iter->x;
-        double y = leftmost_lane_half_width * sin(iter->heading + M_PI_2) + iter->y;
+        double x = leftmost_lane_half_width * cos(iter->heading_rad + M_PI_2) + iter->x_m;
+        double y = leftmost_lane_half_width * sin(iter->heading_rad + M_PI_2) + iter->y_m;
 
         road_polygon_points.push_back( BoostPoint(x, y) );
     }
@@ -39,13 +39,13 @@ inline BoostPointList getRoadPolygonPoints( const RoadInfo& road_info )
     for ( std::vector<Pose2D>::const_reverse_iterator iter = rightmost_lane.lane_points.rbegin();
           iter != rightmost_lane.lane_points.rend(); ++iter )
     {
-        double x = rightmost_lane_half_width * cos(iter->heading - M_PI_2) + iter->x;
-        double y = rightmost_lane_half_width * sin(iter->heading - M_PI_2) + iter->y;
+        double x = rightmost_lane_half_width * cos(iter->heading_rad - M_PI_2) + iter->x_m;
+        double y = rightmost_lane_half_width * sin(iter->heading_rad - M_PI_2) + iter->y_m;
 
         road_polygon_points.push_back( BoostPoint(x, y) );
     }
 
-    road_polygon_points.push_back( BoostPoint( leftmost_lane.lane_points[0].x, leftmost_lane.lane_points[0].y ) );
+    road_polygon_points.push_back( BoostPoint( leftmost_lane.lane_points[0].x_m, leftmost_lane.lane_points[0].y_m ) );
 
     return road_polygon_points;
 }
@@ -61,27 +61,27 @@ inline BoostPolygon getRoadPolygon( const RoadInfo& road_info )
     return road_polygon;
 }
 
-inline BoostPointList getVehiclePolygonPoints( const Vehicle& vehicle )
+inline BoostPointList getVehiclePolygonPoints(const Vehicle& vehicle)
 {
     BoostPointList veh_polygon_points;
 
     Pose2D vehicle_pose = vehicle.pose;
-    double yaw = vehicle_pose.heading;
+    double yaw = vehicle_pose.heading_rad;
 
-    double front = 3.869;    // approx (vehicle.length/2 + vehicle.wheel_base/2)
-    double rear  = 0.910;    // approx (vehicle.length/2 - vehicle.wheel_base/2)
-    double width_by_2 = vehicle.width / 2;
+    const double front      = 0.5 * (vehicle.length + vehicle.wheel_base);
+    const double rear       = 0.5 * (vehicle.length - vehicle.wheel_base);
+    const double half_width = 0.5 * vehicle.width;
 
-    Pose2D front_left = Pose2D( cos(yaw), sin(yaw) )*front + Pose2D(cos(yaw + M_PI_2), sin(yaw + M_PI_2))*width_by_2 + vehicle.pose;
-    Pose2D front_right = Pose2D( cos(yaw), sin(yaw) )*front + Pose2D(cos(yaw - M_PI_2), sin(yaw - M_PI_2))*width_by_2 + vehicle.pose;
-    Pose2D rear_left = Pose2D(cos(yaw + M_PI_2), sin(yaw + M_PI_2))*width_by_2 - Pose2D( cos(yaw), sin(yaw) )*rear + vehicle.pose;
-    Pose2D rear_right = Pose2D(cos(yaw - M_PI_2), sin(yaw - M_PI_2))*width_by_2 - Pose2D( cos(yaw), sin(yaw) )*rear + vehicle.pose;
+    Pose2D front_left = Pose2D(cos(yaw), sin(yaw))*front + Pose2D(cos(yaw + M_PI_2), sin(yaw + M_PI_2))*half_width + vehicle.pose;
+    Pose2D front_right = Pose2D(cos(yaw), sin(yaw))*front + Pose2D(cos(yaw - M_PI_2), sin(yaw - M_PI_2))*half_width + vehicle.pose;
+    Pose2D rear_left = Pose2D(cos(yaw + M_PI_2), sin(yaw + M_PI_2))*half_width - Pose2D(cos(yaw), sin(yaw))*rear + vehicle.pose;
+    Pose2D rear_right = Pose2D(cos(yaw - M_PI_2), sin(yaw - M_PI_2))*half_width - Pose2D(cos(yaw), sin(yaw))*rear + vehicle.pose;
 
-    veh_polygon_points.push_back( BoostPoint(rear_left.x, rear_left.y) );
-    veh_polygon_points.push_back( BoostPoint(front_left.x, front_left.y) );
-    veh_polygon_points.push_back( BoostPoint(front_right.x, front_right.y) );
-    veh_polygon_points.push_back( BoostPoint(rear_right.x, rear_right.y) );
-    veh_polygon_points.push_back( BoostPoint(rear_left.x, rear_left.y) );
+    veh_polygon_points.push_back( BoostPoint(rear_left.x_m, rear_left.y_m) );
+    veh_polygon_points.push_back( BoostPoint(front_left.x_m, front_left.y_m) );
+    veh_polygon_points.push_back( BoostPoint(front_right.x_m, front_right.y_m) );
+    veh_polygon_points.push_back( BoostPoint(rear_right.x_m, rear_right.y_m) );
+    veh_polygon_points.push_back( BoostPoint(rear_left.x_m, rear_left.y_m) );
 
     return veh_polygon_points;
 }

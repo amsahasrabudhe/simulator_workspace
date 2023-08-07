@@ -14,7 +14,7 @@ namespace serial_mp
 
     std::vector<mp::Vec2D> calculateRoadPolygon(const mp::RoadInfo& road_info);
 
-    std::vector<mp::Vec2D> calculateTrafficPolygons(const std::vector<mp::Vehicle>& traffic);
+    std::vector<std::vector<mp::Vec2D>> calculateTrafficPolygons(const std::vector<mp::Vehicle>& traffic);
 }
 
 #endif //SERIAL_COST_CALCULATIONS_HPP

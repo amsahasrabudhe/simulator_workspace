@@ -8,8 +8,8 @@ namespace mp
 
 struct Vec2D
 {
-    double x;
-    double y;
+    double x_m;
+    double y_m;
 };
 
 }

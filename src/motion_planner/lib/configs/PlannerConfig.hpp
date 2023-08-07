@@ -26,16 +26,16 @@ struct PlannerConfig
         double          max_vel_mps{17.8816};           ///< Maximum velocity
         double          max_accel_mpss{3.0};            ///< Maximum acceleration
         double          max_jerk_mpsss{4.0};            ///< Maximum jerk
-        double          max_steering_rad{0.698132};     ///< Maximum steering angle in radians
+        double          max_steering_rad{0.698132};     ///< Maximum steering angle in radians // 40deg
 
-        double          braking_accel{-1.0};            ///< Braking accel value
+        double          braking_accel_mpss{-2.5};       ///< Braking value when no viable path is available or planner fails
 
         std::size_t     threads_per_block{128};
-        double          dist_to_goal{12.0};
+        double          planned_path_time_s{4.0};
 
-        double          child_node_dt{1.0};             ///< dt used for child node creation
-        double          update_time_s{0.05};            ///< Planner update time
-        double          plan_path_time_s{0.75};         ///< Plan path call time
+        double          child_node_dt{0.2};               ///< dt used for child node creation
+        double          update_time_s{0.1};               ///< Planner update time
+        double          planning_runtime_thresh_s{0.35};  ///< Plan path call time
 };
 
 }

@@ -12,7 +12,7 @@ namespace mp
 class EgoVehicle : public Vehicle
 {
     public:     /// functions
-        EgoVehicle():
+        EgoVehicle() :
             Vehicle()
         {
 

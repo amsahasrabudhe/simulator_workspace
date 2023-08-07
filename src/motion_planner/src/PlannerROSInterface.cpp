@@ -43,7 +43,6 @@ void PlannerROSInterface::update(const ros::TimerEvent& /*event*/)
     /// Update parallel motion planner algorithm
     m_parallel_mp_algo->planPath();
     m_visualizer->update();
-
     updateEgoVehicleState();
 
     broadcastTransforms();
@@ -52,16 +51,16 @@ void PlannerROSInterface::update(const ros::TimerEvent& /*event*/)
 
 void PlannerROSInterface::loadConfigFromParameterServer()
 { 
-    m_config.ego_veh_state_out_topic        = m_nh.param("/motion_planner/ego_veh_state_out_topic", static_cast<std::string>("/ego_veh_state"));
-    m_config.traffic_veh_states_in_topic    = m_nh.param("/motion_planner/traffic_veh_states_in_topic", static_cast<std::string>("/traffic_veh_states"));
+    m_config.ego_veh_state_out_topic     = m_nh.param("/motion_planner/ego_veh_state_out_topic", static_cast<std::string>("/ego_veh_state"));
+    m_config.traffic_veh_states_in_topic = m_nh.param("/motion_planner/traffic_veh_states_in_topic", static_cast<std::string>("/traffic_veh_states"));
     
-    m_config.max_vel_mps        = m_nh.param("/motion_planner/max_vel_mps", 0.0);
-    m_config.max_accel_mpss     = m_nh.param("/motion_planner/max_accel_mpss", 0.0);
-    m_config.max_jerk_mpsss     = m_nh.param("/motion_planner/max_jerk_mpsss", 0.0);
+    m_config.max_vel_mps      = m_nh.param("/motion_planner/max_vel_mps", 0.0);
+    m_config.max_accel_mpss   = m_nh.param("/motion_planner/max_accel_mpss", 0.0);
+    m_config.max_jerk_mpsss   = m_nh.param("/motion_planner/max_jerk_mpsss", 0.0);
     
-    m_config.max_steering_rad   = m_nh.param("/motion_planner/max_steering_rad", 0.0);
+    m_config.max_steering_rad = m_nh.param("/motion_planner/max_steering_rad", 0.0);
     
-    m_config.update_time_s      = m_nh.param("/motion_planner/update_time_s", 0.02);
+    m_config.update_time_s    = m_nh.param("/motion_planner/update_time_s", 0.1);
 }
 
 void PlannerROSInterface::loadSceneDetailsFromParameterServer()
@@ -83,7 +82,7 @@ void PlannerROSInterface::loadSceneDetailsFromParameterServer()
         {
             XmlRpc::XmlRpcValue lane_point_xml = xml_lanes[i]["lane_points"][j];
 
-            Pose2D lane_point(lane_point_xml["x"], lane_point_xml["y"], lane_point_xml["heading"]);
+            Pose2D lane_point(lane_point_xml["x"], lane_point_xml["y"], lane_point_xml["heading_rad"]);
             lane.lane_points.push_back(lane_point);
         }
 
@@ -101,7 +100,7 @@ void PlannerROSInterface::setupEgoVehicle()
     /// Load initial values from scene information on parameter server
     double init_x = m_nh.param("/sim_scene_data/ego_veh_pose/x", 0.0);
     double init_y = m_nh.param("/sim_scene_data/ego_veh_pose/y", 0.0);
-    double init_heading = m_nh.param("/sim_scene_data/ego_veh_pose/heading", 0.0);
+    double init_heading = m_nh.param("/sim_scene_data/ego_veh_pose/heading_rad", 0.0);
 
     m_overall_info->ego_state->setPose(init_x, init_y, init_heading);
     
@@ -109,6 +108,8 @@ void PlannerROSInterface::setupEgoVehicle()
     m_overall_info->ego_state->setVel(3.5);
     m_overall_info->ego_state->setAccel(0);
     m_overall_info->ego_state->setSteeringAngle(0);
+
+    m_overall_info->ego_state->polygon_points =  geometry::getVehiclePolygonPoints(*m_overall_info->ego_state);
 }
 
 void PlannerROSInterface::updateEgoVehicleState()
@@ -124,31 +125,22 @@ void PlannerROSInterface::updateEgoVehicleState()
 
     m_last_update_time = now;
 
-    double curr_theta = m_overall_info->ego_state->pose.heading;
-    double curr_steering = m_overall_info->mp_info.curr_best_node.steering;
-    double curr_vel = m_overall_info->ego_state->vel;
+    double curr_theta = m_overall_info->ego_state->pose.heading_rad;
+    double curr_steering = m_overall_info->mp_info.curr_best_node.steering_rad;
+    double curr_vel = m_overall_info->ego_state->vel_mps;
 
+    m_overall_info->ego_state->pose.x_m += dt * curr_vel * cos(curr_theta);
+    m_overall_info->ego_state->pose.y_m += dt * curr_vel * sin(curr_theta);
+    
     double beta = dt * curr_vel * tan(curr_steering) / m_config.wheel_base;
-    double R = dt * curr_vel / beta;
+    m_overall_info->ego_state->pose.heading_rad = std::fmod((curr_theta+beta), 2*M_PI);
 
-    if (beta > 0.001)
-    {
-        m_overall_info->ego_state->pose.x += (sin(curr_theta+beta) - sin(curr_theta))*R;
-        m_overall_info->ego_state->pose.y += (cos(curr_theta) - cos(curr_theta+beta))*R;
-        m_overall_info->ego_state->pose.heading = fmod ((curr_theta+beta), 2*M_PI);
-    }
-    else
-    {
-        m_overall_info->ego_state->pose.x += dt * curr_vel * cos(curr_theta);
-        m_overall_info->ego_state->pose.y += dt * curr_vel * sin(curr_theta);
-        m_overall_info->ego_state->pose.heading = fmod ((curr_theta+beta), 2*M_PI);
-    }
-
-    m_overall_info->ego_state->vel += dt * m_overall_info->mp_info.curr_best_node.accel;
+    m_overall_info->ego_state->vel_mps += dt * m_overall_info->mp_info.curr_best_node.accel_mpss;
 
     // Set velocity to zero if braking activated
-    if (m_overall_info->ego_state->vel < 0)
-        m_overall_info->ego_state->vel = 0;
+    m_overall_info->ego_state->vel_mps = std::max(0.0, m_overall_info->ego_state->vel_mps);
+
+    m_overall_info->ego_state->polygon_points = geometry::getVehiclePolygonPoints(*m_overall_info->ego_state);
 }
 
 void PlannerROSInterface::broadcastTransforms()
@@ -160,12 +152,12 @@ void PlannerROSInterface::broadcastTransforms()
 
     world_origin_to_vehicle_origin.child_frame_id = "vehicle_origin";
 
-    world_origin_to_vehicle_origin.transform.translation.x = m_overall_info->ego_state->pose.x;
-    world_origin_to_vehicle_origin.transform.translation.y = m_overall_info->ego_state->pose.y;
+    world_origin_to_vehicle_origin.transform.translation.x = m_overall_info->ego_state->pose.x_m;
+    world_origin_to_vehicle_origin.transform.translation.y = m_overall_info->ego_state->pose.y_m;
     world_origin_to_vehicle_origin.transform.translation.z = 0;
 
     tf2::Quaternion q;
-    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading);
+    q.setRPY(0, 0, m_overall_info->ego_state->pose.heading_rad);
     world_origin_to_vehicle_origin.transform.rotation.x = q.x();
     world_origin_to_vehicle_origin.transform.rotation.y = q.y();
     world_origin_to_vehicle_origin.transform.rotation.z = q.z();
@@ -180,13 +172,13 @@ void PlannerROSInterface::publishEgoVehicleState()
 
     ros_ego_state.header.stamp  = ros::Time::now();
 
-    ros_ego_state.vehicle.pose.x        = m_overall_info->ego_state->pose.x;
-    ros_ego_state.vehicle.pose.y        = m_overall_info->ego_state->pose.y;
-    ros_ego_state.vehicle.pose.theta    = m_overall_info->ego_state->pose.heading;
+    ros_ego_state.vehicle.pose.x        = m_overall_info->ego_state->pose.x_m;
+    ros_ego_state.vehicle.pose.y        = m_overall_info->ego_state->pose.y_m;
+    ros_ego_state.vehicle.pose.theta    = m_overall_info->ego_state->pose.heading_rad;
 
-    ros_ego_state.vehicle.vel           = m_overall_info->ego_state->vel;
-    ros_ego_state.vehicle.accel         = m_overall_info->ego_state->accel;
-    ros_ego_state.vehicle.steering      = m_overall_info->ego_state->steering;
+    ros_ego_state.vehicle.vel           = m_overall_info->ego_state->vel_mps;
+    ros_ego_state.vehicle.accel         = m_overall_info->ego_state->accel_mpss;
+    ros_ego_state.vehicle.steering      = m_overall_info->ego_state->steering_rad;
 
     ros_ego_state.vehicle.length        = m_overall_info->ego_state->length;
     ros_ego_state.vehicle.width         = m_overall_info->ego_state->width;
@@ -199,17 +191,17 @@ void PlannerROSInterface::trafficStatesReceived(const simulator_msgs::TrafficVeh
     /// Clear current list of traffic vehicles and refill with new incoming list
     m_overall_info->traffic.clear();
 
-    for(auto vehicle : data->traffic)
+    for(const auto& vehicle : data->traffic)
     {
-        Vehicle traffic_veh = Vehicle();
+        Vehicle traffic_veh;
         
         traffic_veh.id          = static_cast<std::uint8_t>(vehicle.id);
         traffic_veh.length      = vehicle.length;
         traffic_veh.width       = vehicle.width;
         traffic_veh.pose        = Pose2D(vehicle.pose.x, vehicle.pose.y, vehicle.pose.theta);
-        traffic_veh.steering    = vehicle.steering;
-        traffic_veh.vel         = vehicle.vel;
-        traffic_veh.accel       = vehicle.accel;
+        traffic_veh.steering_rad = vehicle.steering;
+        traffic_veh.vel_mps     = vehicle.vel;
+        traffic_veh.accel_mpss  = vehicle.accel;
 
         traffic_veh.polygon_points = geometry::getVehiclePolygonPoints(traffic_veh);
 

@@ -3,8 +3,8 @@ traffic_veh_states_in_topic : "/traffic_veh_states"
 visualization_topic         : "/planner/visualization"
 
 max_vel_mps                 : 17.8816   # 40 mph
-max_accel_mpss              : 4.0
-max_jerk_mpsss              : 1.0
+max_accel_mpss              : 3.0
+max_jerk_mpsss              : 4.0
 max_steering_rad            : 0.698132  # 40 degrees
 
-update_time_s               : 0.02
+update_time_s               : 0.1

@@ -13,71 +13,54 @@ namespace mp
 struct Node
 {
     public:     /// functions
-        Node(const uint& index = 0,
-             const double& x = 0.0, const double& y = 0.0, const double& heading = 0.0,
-             const double& steering = 0.0,
-             const double& vel = 0.0,
-             const double& accel = 0.0):
+        Node(const std::uint64_t index = 0,
+             const double x = 0.0, const double y = 0.0, const double heading = 0.0,
+             const double steering_rad = 0.0,
+             const double vel_mps = 0.0,
+             const double accel_mpss = 0.0):
             pose(Pose2D(x, y, heading)),
-            steering(steering),
-            vel(vel),
-            accel(accel),
-            gx(0.0),
-            hx(0.0),
-            not_on_road(false),
-            is_colliding(false),
+            steering_rad(steering_rad),
+            vel_mps(vel_mps),
+            accel_mpss(accel_mpss),
             node_index(index),
             parent_index(0)
         {
 
         }
 
-        void setGx(const double& gx)
+        void setGx(const double gx)                     {this->gx = gx;}
+        void setNodeIndex(const std::uint64_t index)    {this->node_index = index;}
+        void setParentIndex(const std::uint64_t index)  {this->parent_index = index;}
+
+        double distFrom(const Node& other)
         {
-            this->gx = gx;
+            const double dx_squared = (pose.x_m - other.pose.x_m) * (pose.x_m - other.pose.x_m);
+            const double dy_squared = (pose.y_m - other.pose.y_m) * (pose.y_m - other.pose.y_m);
+            return std::sqrt(dx_squared + dy_squared);
         }
 
-        void setNodeIndex(const uint& index)
+        bool operator==(const Node& other) const
         {
-            node_index = index;
-        }
-
-        void setParentIndex(const uint& index)
-        {
-            parent_index = index;
-        }
-
-        double distFrom(const Node other)
-        {
-            return pow((pow((pose.x - other.pose.x), 2) + pow((pose.y - other.pose.y), 2)), 0.5);
-        }
-
-        bool operator== (const Node& other) const
-        {
-            if (pose == other.pose)
-            {
-                return true;
-            }
-
-            return false;
+            const bool nodes_equal = (pose == other.pose); //&& (steering_rad - other.steering_rad);
+            return nodes_equal;
         }
 
     public:     /// variables
 
         Pose2D pose;
 
-        double steering;
-        double vel;
-        double accel;
+        double steering_rad{0.0};
+        double vel_mps{0.0};
+        double accel_mpss{0.0};
 
-        double gx;
-        double hx;
+        double gx{0.0};
+        double hx{0.0};
 
-        bool   not_on_road;
-        bool   is_colliding;
+        bool   not_on_road{false};
+        bool   is_colliding{false};
 
-        uint   node_index;
-        uint   parent_index;
+        std::uint64_t node_index{0U};
+        std::uint64_t parent_index{0U};
 };
 
 class CompareNodeCost

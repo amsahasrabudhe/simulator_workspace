@@ -7,6 +7,9 @@ lanes:
 - lane_id: 0
   lane_points:
   - heading: -0.01587168299179005
+    x: 0.0
+    y: 94.13145539906104
+  - heading: -0.01587168299179005
     x: 14.788732394366198
     y: 94.13145539906104
   - heading: 0.0
@@ -69,6 +72,9 @@ lanes:
 - lane_id: 1
   lane_points:
   - heading: -0.01587168299179005
+    x: 0.0
+    y: 90.61032863849766
+  - heading: -0.01587168299179005
     x: 14.788732394366198
     y: 90.61032863849766
   - heading: 0.0
@@ -130,6 +136,9 @@ lanes:
     y: 90.61032863849766
 - lane_id: 2
   lane_points:
+  - heading: -0.01587168299179005
+    x: 0.0
+    y: 87.08920187793427
   - heading: -0.01587168299179005
     x: 14.788732394366198
     y: 87.08920187793427
@@ -195,16 +204,22 @@ traffic_vehicles:
   vehicle_id: 100
   vehicle_pose:
     heading: 0.0
-    x: 200.93896713615024
+    x: 100.93896713615024
     y: 90.3755868544601
-- initial_velocity: 3.0
+- initial_velocity: 0.0
   vehicle_id: 101
+  vehicle_pose:
+    heading: 0.0
+    x: 175.93896713615024
+    y: 94.13145539906104
+- initial_velocity: 3.0
+  vehicle_id: 102
   vehicle_pose:
     heading: -0.011235482257962729
     x: 95.07042253521128
     y: 87.08920187793427
 - initial_velocity: 3.0
-  vehicle_id: 102
+  vehicle_id: 103
   vehicle_pose:
     heading: 0.0
     x: 21.126760563380284

@@ -12,34 +12,33 @@ namespace mp
 class Vehicle
 {
     public:     /// functions
-        Vehicle(const double& init_x=0.0, const double& init_y=0.0, const double& init_heading=0.0 , const double& init_vel=0.0 , const double& init_accel=0.0):
-            pose(init_x, init_y, init_heading),
-            vel(init_vel),
-            accel(init_accel)
-        {
+        Vehicle(const double init_x_m=0.0, const double init_y_m=0.0, const double init_heading=0.0, 
+                const double init_vel_mps=0.0 , const double init_accel_mpss=0.0):
+            pose(init_x_m, init_y_m, init_heading),
+            vel_mps(init_vel_mps),
+            accel_mpss(init_accel_mpss)
+        {}
 
+        void setPose(const double& x_m=0.0, const double& y_m=0.0, const double& heading_rad=0.0)
+        {
+            this->pose.x_m = x_m;
+            this->pose.y_m = y_m;
+            this->pose.heading_rad = heading_rad;
         }
 
-        void setPose(const double& x=0.0, const double& y=0.0, const double& heading=0.0)
+        void setVel(const double& vel_mps=0.0)
         {
-            this->pose.x = x;
-            this->pose.y = y;
-            this->pose.heading = heading;
+            this->vel_mps = vel_mps;
         }
 
-        void setVel(const double& vel=0.0)
+        void setAccel(const double& accel_mpss=0.0)
         {
-            this->vel = vel;
+            this->accel_mpss = accel_mpss;
         }
 
-        void setAccel(const double& accel=0.0)
+        void setSteeringAngle(const double& steering_rad=0.0)
         {
-            this->accel = accel;
-        }
-
-        void setSteeringAngle(const double& steering_angle=0.0)
-        {
-            this->steering = steering_angle;
+            this->steering_rad = steering_rad;
         }
 
     public:     /// variables
@@ -47,13 +46,14 @@ class Vehicle
         std::uint8_t id{0};
 
         double length{4.97};
+        double wheel_base{2.81};
         double width{2.1};
 
         Pose2D pose;
 
-        double steering{0.0};
-        double vel;
-        double accel;
+        double steering_rad{0.0};
+        double vel_mps;
+        double accel_mpss;
 
         BoostPointList  polygon_points;
 };
