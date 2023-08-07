@@ -1,13 +1,11 @@
-﻿car_wheel_base_m           : 2.81
-car_length_m               : 4.97
-car_width_m                : 2.1
-car_height_m               : 1.451
+﻿pixels_per_m               : 4.26
+
+veh_wheel_base_m           : 2.81
+veh_length_m               : 4.97
+veh_width_m                : 2.1
+veh_height_m               : 1.451
 
 max_acceleration_mps2      : 4.0
 max_velocity_mps           : 22.352        # 50 mph Reduced max velocity for simulation purposes
 max_steering_angle_degree  : 40.0
 
-car_length_pixel            : 68
-car_width_pixel             : 30
-
-pixels_per_meter            : 4.26

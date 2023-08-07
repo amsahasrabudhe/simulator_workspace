@@ -13,11 +13,7 @@ class Vehicle
 {
     public:     /// functions
         Vehicle(const double& init_x=0.0, const double& init_y=0.0, const double& init_heading=0.0 , const double& init_vel=0.0 , const double& init_accel=0.0):
-            id(0),
-            length(4.97),
-            width(2.1),
             pose(init_x, init_y, init_heading),
-            steering(0.0),
             vel(init_vel),
             accel(init_accel)
         {
@@ -48,14 +44,14 @@ class Vehicle
 
     public:     /// variables
 
-        std::uint8_t id;
+        std::uint8_t id{0};
 
-        double length;
-        double width;
+        double length{4.97};
+        double width{2.1};
 
         Pose2D pose;
 
-        double steering;
+        double steering{0.0};
         double vel;
         double accel;
 

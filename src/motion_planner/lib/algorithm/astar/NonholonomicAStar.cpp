@@ -11,9 +11,7 @@ NonholonomicAStar::NonholonomicAStar(const ros::NodeHandle& nh, const std::share
     m_overall_info(overall_info),
     m_cfg(cfg),
     m_planner_failed(false)
-{
-
-}
+{}
 
 void NonholonomicAStar::initialize()
 {
@@ -22,23 +20,13 @@ void NonholonomicAStar::initialize()
 
     // Set currrent lane as desired lane on initialize
     m_overall_info->mp_info.desired_lane = m_overall_info->mp_info.current_lane;
-
-    m_plan_path_timer = m_nh.createTimer(ros::Duration(m_cfg.plan_path_time_s), &NonholonomicAStar::planPath, this);
-    m_plan_path_timer.start();
 }
 
-void NonholonomicAStar::update()
+void NonholonomicAStar::planPath()
 {
-    // Get Lane points based on localization information
-    m_overall_info->curr_poly_lanepoints = getLanePointsForPolyFit();
+    /// Get nearest lane point and lane id
+    localize(m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first);
 
-    // Fit spline for given lane points
-//    m_overall_info->lane_center_spline = getSpline( m_overall_info->curr_poly_lanepoints );
-
-}
-
-void NonholonomicAStar::planPath(const ros::TimerEvent& /*event*/)
-{
     if (m_planner_failed == false)
     {
         ros::Time start_time = ros::Time::now();
@@ -244,45 +232,6 @@ void NonholonomicAStar::localize(const std::size_t /*known_current_lane*/, const
 
     /// Update localization information in OverallInfo
     m_overall_info->nearest_lane_point_with_index = nearest_lane_point;
-}
-
-std::vector<Pose2D> NonholonomicAStar::getLanePointsForPolyFit()
-{
-    /// Get nearest lane point and lane id
-    localize(m_overall_info->mp_info.current_lane, m_overall_info->nearest_lane_point_with_index.first);
-
-    std::vector<Pose2D> points;
-
-    std::size_t count = 0;
-    std::size_t first_pt = m_overall_info->nearest_lane_point_with_index.first - m_cfg.poly_fit_lane_points_behind_veh;
-
-    LaneInfo curr_lane = m_overall_info->road_info.lanes[m_overall_info->mp_info.desired_lane];
-    while (count < m_cfg.poly_fit_min_lane_points && (first_pt + count) <= curr_lane.lane_points.size() )
-    {
-        Pose2D point;
-        point.x     = curr_lane.lane_points[first_pt + count].x;
-        point.y     = curr_lane.lane_points[first_pt + count].y;
-        point.heading = curr_lane.lane_points[first_pt + count].heading;
-
-        points.push_back(point);
-        count++;
-    }
-
-    return points;
-}
-
-Eigen::Spline3d NonholonomicAStar::getSpline( const std::vector<Pose2D>& points )
-{
-    Eigen::Vector3d spline_points( points.size() );
-
-    for (std::uint32_t i = 0; i < points.size(); ++i)
-    {
-        spline_points(0, i) = points[i].x;
-        spline_points(1, i) = points[i].y;
-        spline_points(2, i) = points[i].heading;
-    }
-
-    return Eigen::SplineFitting<Eigen::Spline3d>::Interpolate(spline_points, 3);
 }
 
 }

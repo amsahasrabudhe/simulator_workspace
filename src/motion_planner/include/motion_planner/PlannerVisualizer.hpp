@@ -29,7 +29,6 @@ class PlannerVisualizer
         /// @brief Function to publish visualization messages
         void addVisualization();
 
-        void addSplineLanePointsVis();
         void addLanesVis();
         void addEgoVehicleVis();
         void addTrafficVis();

@@ -10,7 +10,11 @@ class SimulatorConfig:
         self.window_width               = 1280
         self.window_height              = 720
 
-        self.pixels_per_meter           = 14.2259
+        self.veh_wheel_base_m           = 2.81
+        self.veh_length_m               = 4.97
+        self.veh_width_m                = 2.1
+
+        self.pixels_per_meter           = 4.26
 
         self.env_yaml_file              = "resources/environments/two_lane_straight_two_cars.yaml"
         self.env_bg_image_file          = "resources/environments/two_lane_straight.png"

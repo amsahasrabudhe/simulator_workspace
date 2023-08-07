@@ -13,9 +13,7 @@ namespace mp
 PlannerROSInterface::PlannerROSInterface(const ros::NodeHandle& nh):
     m_nh(nh),
     m_last_update_time(ros::Time::now())
-{
-
-}
+{}
 
 void PlannerROSInterface::initialize()
 {
@@ -43,7 +41,7 @@ void PlannerROSInterface::initialize()
 void PlannerROSInterface::update(const ros::TimerEvent& /*event*/)
 {
     /// Update parallel motion planner algorithm
-    m_parallel_mp_algo->update();
+    m_parallel_mp_algo->planPath();
     m_visualizer->update();
 
     updateEgoVehicleState();
@@ -64,30 +62,26 @@ void PlannerROSInterface::loadConfigFromParameterServer()
     m_config.max_steering_rad   = m_nh.param("/motion_planner/max_steering_rad", 0.0);
     
     m_config.update_time_s      = m_nh.param("/motion_planner/update_time_s", 0.02);
-    
 }
 
 void PlannerROSInterface::loadSceneDetailsFromParameterServer()
 {
-    m_overall_info->road_info.num_lanes = static_cast<std::uint8_t>(m_nh.param("/sim_scene_data/num_lanes", 0));
+    double lane_width = m_nh.param("/sim_scene_data/lane_width", 3.6);
 
-    double lane_width = m_nh.param("/sim_scene_data/lane_width", 0.0);
+    XmlRpc::XmlRpcValue xml_lanes;
+    m_nh.param("/sim_scene_data/lanes", xml_lanes, xml_lanes);
 
-    XmlRpc::XmlRpcValue value;
-    m_nh.param("/sim_scene_data/lanes", value, value);
-
-    for (std::int8_t i = 0; i < value.size(); ++i)
+    for (std::int8_t i = 0; i < xml_lanes.size(); ++i)
     {
         LaneInfo lane;
-        
-        lane.lane_id = value[i]["lane_id"];
         lane.lane_width = lane_width;
+        lane.lane_id = xml_lanes[i]["lane_id"];
 
-        std::int32_t num_lane_points = value[i]["lane_points"].size();
+        std::int32_t num_lane_points = xml_lanes[i]["lane_points"].size();
 
         for (std::int32_t j = 0; j < num_lane_points; ++j)
         {
-            XmlRpc::XmlRpcValue lane_point_xml = value[i]["lane_points"][j];
+            XmlRpc::XmlRpcValue lane_point_xml = xml_lanes[i]["lane_points"][j];
 
             Pose2D lane_point(lane_point_xml["x"], lane_point_xml["y"], lane_point_xml["heading"]);
             lane.lane_points.push_back(lane_point);
@@ -97,6 +91,7 @@ void PlannerROSInterface::loadSceneDetailsFromParameterServer()
     }
 
     // Set road polygon
+    m_overall_info->road_info.num_lanes = m_overall_info->road_info.lanes.size();
     m_overall_info->road_info.road_polygon_points = geometry::getRoadPolygonPoints( m_overall_info->road_info );
     m_overall_info->road_info.road_polygon = geometry::getRoadPolygon( m_overall_info->road_info );
 }
@@ -106,11 +101,12 @@ void PlannerROSInterface::setupEgoVehicle()
     /// Load initial values from scene information on parameter server
     double init_x = m_nh.param("/sim_scene_data/ego_veh_pose/x", 0.0);
     double init_y = m_nh.param("/sim_scene_data/ego_veh_pose/y", 0.0);
-    double init_theta = m_nh.param("/sim_scene_data/ego_veh_pose/heading", 0.0);
+    double init_heading = m_nh.param("/sim_scene_data/ego_veh_pose/heading", 0.0);
 
-    m_overall_info->ego_state->setPose(init_x, init_y, init_theta);
+    m_overall_info->ego_state->setPose(init_x, init_y, init_heading);
     
-    m_overall_info->ego_state->setVel(2.0);
+    // TODO: This init vel should be read from sim scene data
+    m_overall_info->ego_state->setVel(3.5);
     m_overall_info->ego_state->setAccel(0);
     m_overall_info->ego_state->setSteeringAngle(0);
 }

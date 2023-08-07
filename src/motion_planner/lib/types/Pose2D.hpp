@@ -29,9 +29,7 @@ class Pose2D
             x(_x),
             y(_y),
             heading(_theta)
-        {
-
-        }
+        {}
 
         Pose2D operator+ (const Pose2D& other)
         {
@@ -77,17 +75,13 @@ class Pose2D
 
         Vec2D getVec2d()
         {
-            Vec2D vec;
-            vec.x = x;
-            vec.y = y;
-
-            return vec;
+            return Vec2D{x, y};
         }
 
         std::string toString()
         {
             std::stringstream ss;
-            ss << "X: "<< x<< " , Y: "<< y<< " , heading: "<< heading;
+            ss << "X: "<< x<< " , Y: "<< y<< " , Heading: "<< heading;
 
             return ss.str();
         }

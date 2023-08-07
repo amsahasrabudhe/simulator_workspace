@@ -11,7 +11,7 @@ class Vehicle:
         self.veh_id         = veh_id
 
         self.wheel_base     = 2.81
-        self.length         = 4.78
+        self.length         = 4.97
         self.width          = 2.1
 
         self.pose           = Pose(pos_x=veh_init_pos[0], pos_y=veh_init_pos[1], heading=veh_init_heading)

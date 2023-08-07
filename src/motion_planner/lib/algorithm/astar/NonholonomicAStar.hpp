@@ -27,12 +27,9 @@ class NonholonomicAStar
         void initialize();
 
         /// @brief
-        void update();
+        void planPath();
 
     private:
-
-        /// @brief
-        void planPath(const ros::TimerEvent& event);
 
         /// @brief
         void addToOpenList(const Node& node);
@@ -43,20 +40,12 @@ class NonholonomicAStar
         /// @brief
         void localize(const std::size_t known_current_lane, const std::size_t known_nearest_lane_point_index);
 
-        /// @brief
-        Eigen::Spline3d getSpline( const std::vector<Pose2D>& points );
-
-        /// @brief
-        std::vector<Pose2D> getLanePointsForPolyFit();
-
     private:     /// variables
 
         ros::NodeHandle                 m_nh;
 
         std::shared_ptr<OverallInfo>    m_overall_info;
         PlannerConfig                   m_cfg;
-
-        ros::Timer                      m_plan_path_timer;
 
         bool                            m_planner_failed;
 

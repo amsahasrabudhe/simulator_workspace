@@ -27,7 +27,9 @@ class Simulator:
         if self.sim_config.render:
             self.setupSimulation()
 
-            scaled_image_dims = (int(Vehicle().length*self.sim_config.pixels_per_meter), int(Vehicle().width*self.sim_config.pixels_per_meter))
+            scaled_image_dims = (int(self.sim_config.veh_length_m*self.sim_config.pixels_per_meter), 
+                                 int(self.sim_config.veh_width_m*self.sim_config.pixels_per_meter))
+            
             self.ego_veh_image     = loadImage(self, self.sim_config.ego_veh_image_file, scaled_image_dims)
             self.traffic_veh_image = loadImage(self, self.sim_config.traffic_veh_image_file, scaled_image_dims)
 
@@ -56,6 +58,10 @@ class Simulator:
         cfg.display_update_duration_s  = loadParam("/simulator/display_update_duration_s", 0.02)
 
         cfg.render                     = loadParam("/simulator/render", False)
+
+        cfg.veh_wheel_base_m           = loadParam("/vehicle_description/veh_wheel_base_m", 2.81)
+        cfg.veh_length_m               = loadParam("/vehicle_description/veh_length_m", 4.97)
+        cfg.veh_width_m                = loadParam("/vehicle_description/veh_width_m", 2.1)
 
         cfg.pixels_per_meter           = loadParam("/vehicle_description/pixels_per_meter", 4.26)
 

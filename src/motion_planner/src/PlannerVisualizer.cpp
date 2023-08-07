@@ -3,6 +3,7 @@
 #include <math.h>
 #include <tf2/LinearMath/Quaternion.h>
 
+#include "geometry_msgs/Point.h"
 #include "motion_planner/PlannerVisualizer.hpp"
 
 namespace mp
@@ -39,7 +40,6 @@ void PlannerVisualizer::addVisualization()
     // Clear previous messages
     m_vis_msg->markers.clear();
 
-    addSplineLanePointsVis();
     addLanesVis();
     addEgoVehicleVis();
     addTrafficVis();
@@ -50,85 +50,46 @@ void PlannerVisualizer::addVisualization()
     addCurrChildNodesVis();
 }
 
-void PlannerVisualizer::addSplineLanePointsVis()
-{
-    // Add markers for current lane points used for spline generation
-    for (std::size_t i = 0; i < m_overall_info->curr_poly_lanepoints.size(); ++i)
-    {
-        visualization_msgs::Marker point;
-
-        point.header.stamp = ros::Time::now();
-        point.header.frame_id = "world_origin";
-
-        point.id     = static_cast<int>(i);
-        point.type   = visualization_msgs::Marker::SPHERE;
-        point.action = visualization_msgs::Marker::ADD;
-        point.ns     = "spline_points";
-
-        point.pose.position.x = m_overall_info->curr_poly_lanepoints[i].x;
-        point.pose.position.y = m_overall_info->curr_poly_lanepoints[i].y;
-        point.pose.position.z = 0.1;
-
-        point.scale.x = 0.1;
-        point.scale.y = 0.1;
-        point.scale.z = 0.1;
-
-        point.color.r = 0.0;
-        point.color.g = 1.0;
-        point.color.b = 0.0;
-        point.color.a = 1.0;
-
-        point.lifetime = ros::Duration(0.1);
-        point.frame_locked = true;
-
-        m_vis_msg->markers.push_back(point);
-    }
-}
-
 void PlannerVisualizer::addLanesVis()
 {
     // Add markers for lanes visualization
     for (std::size_t i = 0; i < m_overall_info->road_info.lanes.size(); ++i)
     {
-        LaneInfo lane = m_overall_info->road_info.lanes[i];
-        for (std::size_t j = 0; j < lane.lane_points.size(); ++j)
+        const LaneInfo& lane = m_overall_info->road_info.lanes[i];
+        
+        visualization_msgs::Marker lane_point_marker;
+
+        lane_point_marker.header.stamp = ros::Time::now();
+        lane_point_marker.header.frame_id = "world_origin";
+
+        lane_point_marker.id     = lane.lane_id;
+        lane_point_marker.type   = visualization_msgs::Marker::LINE_STRIP;
+        lane_point_marker.action = visualization_msgs::Marker::ADD;
+        lane_point_marker.ns     = "Lanes";
+
+        for (const auto& lane_pt : lane.lane_points)
         {
-            visualization_msgs::Marker lane_point_marker;
+            geometry_msgs::Point pt;
+            pt.x = lane_pt.x;
+            pt.y = lane_pt.y;
+            pt.z = 0.0;
 
-            lane_point_marker.header.stamp = ros::Time::now();
-            lane_point_marker.header.frame_id = "world_origin";
-
-            lane_point_marker.id     = 100*static_cast<int>(i) + static_cast<int>(j);
-            lane_point_marker.type   = visualization_msgs::Marker::CUBE;
-            lane_point_marker.action = visualization_msgs::Marker::ADD;
-            lane_point_marker.ns     = "lanes";
-
-            lane_point_marker.pose.position.x = lane.lane_points[j].x;
-            lane_point_marker.pose.position.y = lane.lane_points[j].y;
-            lane_point_marker.pose.position.z = 0;
-
-            tf2::Quaternion q;
-            q.setRPY(0, 0, lane.lane_points[j].heading);
-
-            lane_point_marker.pose.orientation.x = q.x();
-            lane_point_marker.pose.orientation.y = q.y();
-            lane_point_marker.pose.orientation.z = q.z();
-            lane_point_marker.pose.orientation.w = q.w();
-
-            lane_point_marker.scale.x = 2.3;
-            lane_point_marker.scale.y = m_overall_info->road_info.lanes[i].lane_width - 0.1;  // - 0.1 to show gap between lanes
-            lane_point_marker.scale.z = 0.1;
-
-            lane_point_marker.color.r = 0.3f;
-            lane_point_marker.color.g = 0.3f;
-            lane_point_marker.color.b = 0.3f;
-            lane_point_marker.color.a = 1.0;
-
-            lane_point_marker.lifetime = ros::Duration(0);
-            lane_point_marker.frame_locked = true;
-
-            m_vis_msg->markers.push_back(lane_point_marker);
+            lane_point_marker.points.push_back(std::move(pt));
         }
+
+        lane_point_marker.scale.x = 1.0;
+        lane_point_marker.scale.y = lane.lane_width;  // Subtracting width to show gap between lanes
+        lane_point_marker.scale.z = 0.3;
+
+        lane_point_marker.color.r = 0.2f;
+        lane_point_marker.color.g = 0.2f;
+        lane_point_marker.color.b = 0.2f;
+        lane_point_marker.color.a = 1.0;
+
+        lane_point_marker.lifetime = ros::Duration(0);
+        lane_point_marker.frame_locked = true;
+
+        m_vis_msg->markers.push_back(lane_point_marker);
     }
 }
 
